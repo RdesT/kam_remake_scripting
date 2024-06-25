@@ -1,0 +1,36 @@
+﻿0:Found a bug or want to improve it somehow? Write me in discord Ritter_des_Todes#2629.
+1:Need to build
+2:Think where to build and make a road to
+3:Orders in buildings
+4:Advices
+
+100:School has no orders!
+101:Bind your school to button. (CTRL + <number>).
+102:Missing
+103:No orders
+104:Now is the time to start making recruits.
+
+300:Lock wares at storehouse. It's recomended to store only food, stone, gold, timber.
+301:Lock wares at storehouse. It's recomended to store only food, stone, gold, timber, iron ore, iron bar.
+
+304:Close timber at storehouse. 3 sawmills will make enough timber for building.
+305:Close your storehouse. There is no need to store something now. 
+306:Storehouse is empty. Destroy it and make at this place something usefull.
+
+308:Before Inn will be finished close stone at storehouse. That will save you from traffic.
+309:Close Inn! Don't waste serfs time at food now.
+310:Lock stone at storehouse and open Inn!
+
+
+311:Change resources distribution(F2). Set max coal distribution for metallurgists and for other buildings less at least on 1.
+312:Leave some space close to storehouse for Inn and butchers. Make sure that woodcutters will not plant there something!
+313:Leave 2 tiles in front of storehouse. This will lower traffic close to it.
+
+321:Make you quarries closer to the center of your future town to build faster.
+322:Make woodcutters at town side. If there is a forest in town center that does not allows you to build, cut it and make it at side.
+323:It's time to make woodcutters in places where you have additional wood. Try to take all wood you have. 
+
+324:Try to build farms in pairs. One farmer can plant for both. Second farm from built the pair will start working faster.
+325:Try to make coal mine before you finish making metallurgists. Metallurgists will not work without coal anyway.
+
+326:Minimum farm amount per building is. Swine farm: 1,5. Stable: 2. Mill: 1.
