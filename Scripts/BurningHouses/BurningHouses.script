@@ -1,0 +1,346 @@
+{$DEFINE TRACE}
+
+{$EVENT evtTick:BH_BurningHousesOnTick}
+
+type BH_HouseSettings =
+record
+	HouseType:integer;
+	Coef:single;
+end;
+
+type BH_Player =
+record
+	Id:integer;
+	HousesSettings: array of BH_HouseSettings;
+end;
+
+const
+	BH_DefaultWorkPeriod = 1;
+  BH_DefaultStartBurningChance = 300;
+  BH_DefaultSpreadBurningChance = 20;
+  BH_DefaultBurningMessage = 'Fire! We need to stop it before it burns everything and spreads to other buildings.';
+
+var
+  BH_Players : array of BH_Player;
+	//Period of script working. In seconds.
+	BH_WorkPeriod : integer;
+  BH_StartBurningChance : integer;
+  BH_SpreadBurningChance : integer;
+  BH_BurningMessage : string;
+
+
+procedure BH_Log(logMessage: string);
+begin
+  {$IFDEF DEBUG}
+    A.Log('DEBUG: ' + logMessage);
+  {$ENDIF}
+end;
+
+procedure BH_Trace(logMessage: string);
+begin
+  {$IFDEF TRACE}
+    A.Log('TRACE: ' + logMessage);
+  {$ENDIF}
+end;
+
+procedure BH_AddPlayer(playerId: integer);
+var
+  count : integer;
+  newPlayer : BH_Player;
+begin
+  newPlayer.Id := playerId;
+  //TODO check existing;
+  count := Length(BH_Players);
+	setLength(BH_Players, count + 1);
+	BH_Players[count] := newPlayer;
+end;
+
+function BH_GetCoefficient(player: BH_Player; houseType : integer) :single;
+var i:integer;
+begin
+  result:= 1;
+  for i:=0 to Length(player.HousesSettings)-1 do
+  begin
+    if (player.HousesSettings[i].HouseType = houseType) then
+    begin
+      result:= player.HousesSettings[i].Coef;
+      exit;
+    end;
+  end;
+end;
+
+
+function BH_GetBuildingHeigh(houseType: integer):integer;
+begin
+  case houseType of
+    htGoldMine: result:=1;
+    htIronMine: result:=1;
+
+    htCoalMine: result:=2;
+    htFishermans: result:=2;
+    htMetallurgists: result:=2;
+    htMill: result:=2;
+    htQuarry: result:=2;
+    htSawmill: result:=2;
+    htTannery: result:=2;
+    htWatchTower: result:=2;
+    htWeaponSmithy: result:=2;
+    htWeaponWorkshop: result:=2;
+    htVineyard: result :=2;
+    htWoodcutters: result :=2;
+
+    htBarracks: result:=4;
+    else
+      result:=3;
+  end;
+end;
+
+function BH_GetBuildingTilesToLeftFromEnter(houseType: integer):integer;
+begin
+  case houseType of
+    htArmorSmithy: result:=1;
+    htArmorWorkshop: result:=0;
+    htBakery: result:=2;
+    htBarracks: result:=1;
+    htButchers: result:=2;
+    htCoalMine: result:=1;
+    htFarm: result:=1;
+    htFishermans: result:=0;
+    htGoldMine: result:=1;
+    htInn: result:=1;
+    htIronMine: result:=1;
+    htIronSmithy: result:=2;
+    htMarket: result:=3;
+    htMetallurgists: result:=1;
+    htMill: result:=1;
+    htQuarry: result:=1;
+    htSawmill: result:=1;
+    htSchool: result:=1;
+    htStables: result:=2;
+    htStore: result:=1;
+    htSwine: result:=3;
+    htTannery: result:=1;
+    htTownHall: result:=1;
+    htWatchTower: result:=1;
+    htWeaponSmithy: result:=1;
+    htWeaponWorkshop: result:=1;
+    htVineyard: result:=2;
+    htWoodcutters: result:=2;
+  end;
+end;
+
+function BH_GetBuildingTilesToRightFromEnter(houseType: integer):integer;
+begin
+  case houseType of
+    htArmorSmithy: result:=2;
+    htArmorWorkshop: result:=2;
+    htBakery: result:=0;
+    htBarracks: result:=2;
+    htButchers: result:=0;
+    htCoalMine: result:=1;
+    htFarm: result:=2;
+    htFishermans: result:=2;
+    htGoldMine: result:=0;
+    htInn: result:=2;
+    htIronMine: result:=1;
+    htIronSmithy: result:=1;
+    htMarket: result:=0;
+    htMetallurgists: result:=1;
+    htMill: result:=1;
+    htQuarry: result:=1;
+    htSawmill: result:=2;
+    htSchool: result:=1;
+    htStables: result:=1;
+    htStore: result:=1;
+    htSwine: result:=0;
+    htTannery: result:=1;
+    htTownHall: result:=2;
+    htWatchTower: result:=0;
+    htWeaponSmithy: result:=2;
+    htWeaponWorkshop: result:=2;
+    htVineyard: result:=0;
+    htWoodcutters: result:=0;
+  end;
+end;
+
+procedure BH_TrySpreadToLocation(x,y, playerId: integer; affectedHouses: array of integer);
+var
+  count : integer;
+  houseId : integer;
+  houseDamage : integer;
+begin
+
+  BH_TRACE('Spread location ' + IntToStr(x) + '/' + IntToStr(y));
+  if (not S.MapTileIsInMapCoords(x,y)) then
+  begin
+    BH_TRACE('Tile out of coordinates');
+    exit;
+  end;
+
+  houseId := S.HouseAt(x,y);
+
+  if (houseId = -1) then
+  begin
+    BH_TRACE('No house at tile');
+    exit;
+  end;
+
+  houseDamage:= S.HouseDamage(houseId)
+  if (houseDamage > 0) then
+  begin
+    BH_TRACE('Already spread');
+    exit;
+  end;
+
+  if (U.ArrayHasElementI(houseId, affectedHouses)) then
+  begin
+    BH_TRACE('Already affected');
+    exit;
+  end;
+
+  if (U.RandomRangeI(1, U.IfThenI(BH_SpreadBurningChance > 0, BH_SpreadBurningChance, BH_DefaultSpreadBurningChance) <> 1)) then
+  begin
+    exit;
+  end;
+
+  BH_TRACE('House was spread');
+  count := Length(affectedHouses);
+	setLength(affectedHouses, count + 1);
+	affectedHouses[count] := houseId;
+
+  A.HouseRepairEnable(houseId, false);
+  A.HouseAddDamage(houseId, 1);
+  A.ShowMsgGoto(playerId, x, y, U.IfThen(Length(BH_BurningMessage) > 0, BH_BurningMessage, BH_DefaultBurningMessage));
+end;
+
+procedure BH_SpreadFire(houseId, houseType, playerId: integer);
+var
+  i: integer;
+  height: integer;
+  tilesToLeft: integer;
+  tilesToRight: integer;
+  location: TKMPoint;
+  leftTop: TKMPoint;
+  rightBottom: TKMPoint;
+  affectedHouses: array of integer;
+begin
+  height:= BH_GetBuildingHeigh(houseType);
+  tilesToLeft:= BH_GetBuildingTilesToLeftFromEnter(houseType);
+  tilesToRight:= BH_GetBuildingTilesToRightFromEnter(houseType);
+
+  location:=S.HousePosition(houseId);
+
+  leftTop.X:= location.X - tilesToLeft - 2;
+  leftTop.Y:= location.Y - height - 2;
+  rightBottom.X:= location.X + tilesToRight + 2;
+  rightBottom.Y:= location.Y + 2;
+
+  BH_TRACE('Location ' + IntToStr(location.X) + '/' + IntToStr(location.Y));
+  BH_TRACE('LeftTop ' + IntToStr(leftTop.X) + '/' + IntToStr(leftTop.Y));
+  BH_TRACE('RightBottom ' + IntToStr(rightBottom.X) + '/' + IntToStr(rightBottom.Y));
+
+  for i := leftTop.X to rightBottom.X do
+  begin
+    BH_TrySpreadToLocation(i, leftTop.Y, playerId, affectedHouses);
+    BH_TrySpreadToLocation(i, rightBottom.Y, playerId, affectedHouses);
+  end;
+
+  for i:= leftTop.Y+1 to rightBottom.Y-1 do
+  begin
+    BH_TrySpreadToLocation(leftTop.X, i, playerId, affectedHouses);
+    BH_TrySpreadToLocation(rightBottom.X, i, playerId, affectedHouses);
+  end;
+end;
+
+procedure BH_TryToKillCitizen(houseId, killChance : integer);
+var
+  i: integer;
+  unitIds : TIntegerArray;
+begin
+  unitIds := S.HouseGetAllUnitsIn(houseId);
+  for i := 0 to Length(unitIds) - 1 do
+  begin
+    if (U.RandomRangeI(1, killChance) = 1) then
+    begin
+      A.UnitKill(unitIds[i], false);
+    end;
+  end;
+end;
+
+procedure BH_BurnBuilding(houseId, currentDamage, houseType, playerId: integer);
+var
+  houseMaxHealth : integer;
+  newDamage : integer;
+
+begin
+  houseMaxHealth:=S.HouseTypeMaxHealth(houseType);
+  newDamage:= U.RandomRangeI(1, (currentDamage div 50) + 2);
+  A.HouseAddDamage(houseId, U.RandomRangeI(1, (currentDamage div 50) + 2));
+
+  if (currentDamage * 3 > houseMaxHealth)then
+  begin
+    BH_TryToKillCitizen(houseId, houseMaxHealth - currentDamage);
+  end;
+
+  if (currentDamage * 2 > houseMaxHealth) then
+  begin
+    BH_SpreadFire(houseId, houseType, playerId);
+  end;
+end;
+
+procedure BH_TryBurnBuilding(player: BH_Player; houseId: integer);
+var
+  houseType : integer;
+  houseLocation : TKMPoint;
+  coef: single;
+  currentDamage: integer;
+  chance: integer;
+begin
+  currentDamage:= S.HouseDamage(houseId);
+  houseType:=S.HouseType(houseId);
+
+  if (currentDamage > 0) then
+  begin
+    BH_BurnBuilding(houseId, currentDamage, houseType, player.Id);
+    exit;
+  end;
+
+  coef := BH_GetCoefficient(player, houseType);
+  chance := U.IfThenI(BH_StartBurningChance > 0, BH_StartBurningChance, BH_DefaultStartBurningChance);
+
+  if (U.RandomRangeI(1, round(chance * coef)) = 1) then
+	begin
+    A.HouseRepairEnable(houseId, false);
+    A.HouseAddDamage(houseId, 1);
+    houseLocation := S.HousePosition(houseId);
+    A.ShowMsgGoto(player.Id, houseLocation.X, houseLocation.Y, U.IfThen(Length(BH_BurningMessage) > 0, BH_BurningMessage, BH_DefaultBurningMessage));
+	end;
+end;
+
+
+procedure BH_TryBurnBuildings(player: BH_Player);
+var
+  i: integer;
+	housesIds : array of integer;
+begin
+  housesIds := S.PlayerGetAllHouses(player.Id);
+  for i:= 0 to Length(housesIds) - 1 do
+	begin
+		BH_TryBurnBuilding(player, housesIds[i]);
+	end;
+end;
+
+
+procedure BH_BurningHousesOnTick();
+var
+	i: integer;
+begin
+	if (States.GameTime mod (U.IfThenI(BH_WorkPeriod > 0, BH_WorkPeriod, BH_DefaultWorkPeriod) * 10) = 0) then
+	begin
+		for i:= 0 to Length(BH_Players) - 1 do
+		begin
+			BH_TryBurnBuildings(BH_Players[i]);
+		end;
+	end;
+end;
+

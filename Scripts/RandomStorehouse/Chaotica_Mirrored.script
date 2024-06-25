@@ -1,0 +1,547 @@
+//Random storehouse placement. Mirror placement of storehouses.
+//The original script was written by Thunder.
+//Rewriten by Ritter des Todes.
+//27.02.2024.
+//Developed for r6720.
+
+//Description.
+//Use InitPlayer function to set randomising limits, serfs and workers count.
+//Use BindPlayers to bind 2 players to make them have mirrored storehouses.
+//Change default values for wares in constants if you need it.
+//That's it. Enjoy.
+
+//TODO.
+//Make user functions to give different amount of wares to players to storehouse. For power locs for example.
+//Make user functions to add different types of units at start.
+
+type Player =
+record
+  XMIN: integer;
+  XMAX: integer;
+  YMIN: integer;
+  YMAX: integer;
+
+  WorkersCount: integer;
+  SerfsCount: integer;
+
+  X: integer;
+  Y: integer;
+end;
+
+type Binding =
+record
+  First: integer;
+  Second: integer;
+end;
+
+const
+  UT_SERF          =  0;
+  UT_LABORER       =  9;
+
+
+  WT_TREE_TRUNK    =  0;
+  WT_STONES        =  1;
+  WT_TIMBER        =  2;
+  WT_GOLD          =  7;
+  WT_WINE          =  8;
+  WT_LOAVES        = 10;
+  WT_SAUSAGES      = 13;
+  WT_FISH          = 27;
+
+  HT_STOREHOUSE        = 11;
+
+  //Default values for the wares in the storehouses.
+  ST= 85;	//stone
+  TM= 64;	//timber
+  GC= 63;	//goldchest
+  WB= 62; //winebarrel
+  BR= 61;	//bread
+  SO= 15;	//sousage
+  FI= 20;	//fish
+  CIN= 80;  //Cinematics length.
+  RADD=40;	//Radius for vision after the storehouse placed
+
+var
+  Players: array [0..7] of Player;
+  Bindings: array of Binding;
+
+
+function FindBoundPlayer(playerId: integer): integer;
+var
+  i: integer;
+
+begin
+  result := -1;
+
+  for i := 0 to Length(Bindings) - 1 do
+  begin
+    if (Bindings[i].First = playerId)then
+    begin
+      result:= Bindings[i].Second;
+      exit;
+    end;
+    if (Bindings[i].Second = playerId)then
+    begin
+      result:= Bindings[i].First;
+      exit;
+    end;
+  end;
+end;
+
+procedure BindPlayers(first, second: integer);
+var
+  count: integer;
+  newBinding: Binding;
+begin
+  //Player can be bound only once.
+  if ((FindBoundPlayer(first) <> -1) or (FindBoundPlayer(second) <> -1)) then
+  begin
+    exit;
+  end;
+
+  count := Length(Bindings);
+  newBinding.First := first;
+  newBinding.Second := second;
+  setLength(Bindings, count + 1);
+  Bindings[count] := newBinding;
+end;
+
+
+procedure InitPlayer(playerId, xMin, xMax, yMin, yMax, workersCount, serfsCount: integer);
+begin
+  Players[playerId].XMIN:= xMin;
+  Players[playerId].XMAX:= xMax;
+  Players[playerId].YMIN:= yMin;
+  Players[playerId].YMAX:= yMax;
+
+  Players[playerId].WorkersCount:= workersCount;
+  Players[playerId].SerfsCount:= serfsCount;
+end;
+
+
+procedure InitPlayers();
+begin
+  InitPlayer(0, 15,68,2,234,5,5); //location 1
+  InitPlayer(1, 15,68,2,234,5,5); //location 2
+  InitPlayer(2, 15,68,2,234,5,5); //location 3
+  InitPlayer(3, 15,68,2,234,5,5); //location 4
+  InitPlayer(4, 191,244,22,254,5,5); //location 5
+  InitPlayer(5, 191,244,22,254,5,5); //location 6
+  InitPlayer(6, 191,244,22,254,5,5); //location 7
+  InitPlayer(7, 191,244,22,254,5,5); //location 8
+
+  BindPlayers(0,6);
+  BindPlayers(1,7);
+  BindPlayers(2,5);
+  BindPlayers(3,4);
+end;
+
+
+function IsPossibleToMakeStoreHouse(x,y: integer): boolean;
+var
+  houseId: integer;
+begin
+  houseId := Actions.GiveHouse(0,HT_STOREHOUSE,x,y);
+  if (houseId <> -1) then
+  begin
+    result := true;
+    Actions.HouseDestroy(houseId,True);
+  end else
+  begin
+    result := false;
+  end;
+end;
+
+function IsPossibleToMakeRoad(x,y: integer):boolean;
+var
+  isRoadPlaced: boolean;
+begin
+  isRoadPlaced := Actions.GiveRoad(0,x,y);
+  if (isRoadPlaced) then
+  begin
+    result := true;
+    Actions.RemoveRoad(x,y);
+  end else
+  begin
+    result := false;
+  end;
+end;
+
+function CheckSidesTileType(x,y: integer): boolean;
+begin
+  if ((States.MapTileType(x,y) = 139) or
+      (States.MapTileType(x,y) = 167) or
+      (States.MapTileType(x,y) = 168) or
+      (States.MapTileType(x,y) = 169) or
+      (States.MapTileType(x,y) = 170) or
+      (States.MapTileType(x,y) = 172) or
+      (States.MapTileType(x,y) = 173) or
+      (States.MapTileType(x,y) = 174) or
+      (States.MapTileType(x,y) = 175)) then
+  begin
+    result := true;
+  end else
+  begin
+    result := false;
+  end;
+end;
+
+function CheckEntranceTileType(x,y: integer): boolean;
+begin
+  if ((States.MapTileType(x,y) = 155) or
+      (States.MapTileType(x,y) = 154) or
+      (States.MapTileType(x,y) = 153) or
+      (States.MapTileType(x,y) = 152)) then
+  begin
+    result := true;
+  end else
+  begin
+    result := false;
+  end;
+end;
+
+//Go spiral way and add citizens. (Actually it's not spiral but I like the result).
+procedure AddCitizens(playerId,x,y: integer);
+var
+  axis : string;
+  xStep : integer;
+  yStep : integer;
+  radius : integer;
+  currentX : integer;
+  currentY: integer;
+
+  dirrectionCounter: integer;
+begin
+
+  currentX := x;
+  currentY := y;
+
+  xStep := 1;
+  yStep := 1;
+
+  axis:= 'Y';
+  dirrectionCounter:= 0;
+
+  //27 is just wonderful number. After all citizens will be added loop will do nothing and end fast anyway.
+  for radius := 1 to 27 do
+  begin
+    while (States.StatCitizenCount(playerId) < Players[playerId].SerfsCount + Players[playerId].WorkersCount) do
+    begin
+
+      if (axis = 'Y') then
+      begin
+
+        currentY := currentY + yStep;
+        if ((currentY >= (y + radius)) or (currentY <= (y - radius))) then
+        begin
+
+          xStep := -xStep;
+          axis := 'X';
+          Inc(dirrectionCounter)
+        end;
+
+      end else
+      begin
+
+        currentX := currentX + xStep;
+        if ((currentX >= (x + radius)) or (currentX <= (x - radius))) then
+        begin
+
+          yStep := -yStep;
+          axis := 'Y';
+          Inc(dirrectionCounter)
+        end;
+      end;
+
+      if (States.StatCitizenCount(playerId) < Players[playerId].SerfsCount) then
+      begin
+        Actions.GiveUnit(playerId, UT_SERF, currentX, (currentY), 4);
+      end else
+      begin
+        Actions.GiveUnit(playerId, UT_LABORER, currentX, (currentY), 4);
+      end;
+
+      //We go to 4 dirrections before we increse radius.
+      if (dirrectionCounter > 4) then
+      begin
+        dirrectionCounter:= 0;
+        break;
+      end;
+    end;
+  end;
+end;
+
+
+function GetTreesCount(x,y: integer): integer;
+var
+  i: integer;
+  j: integer;
+
+  objectType : integer;
+begin
+
+  // This would be the TREECOUNTER before the Stroehouse is placed, but it is not working atm...how hard can it be?
+	for i:= (x-1) to (x+1) do
+		begin
+
+    for j:= (y-2) to y do
+			begin
+				objectType:= States.MapTileObject(i,j);
+				case objectType of
+					88,89,90,91,92,93,94,95,96,97,98,99,100,
+          101,102,103,104,105,106,107,108,109,110,
+          111,112,113,114,115,116,117,118,119,120,
+          121,123,124,125,49 ,150,151,152,153,154,
+          155,156,157,158,159,160,161,162,163,164,
+          165,166,167,168,169,170,171,172:
+          inc(result);
+				else end;
+		end;
+	end;
+end;
+
+
+function TryToSetStoreHouse(playerId,x,y : integer): boolean;
+var
+  treesCount: integer;
+begin
+
+  //Count trees before placing storehouse.
+  treesCount := GetTreesCount(x,y);
+
+  result := true;
+  if (not IsPossibleToMakeStoreHouse(x,y)) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  //Check tiles at sides and in front of storehouse that we want to place.
+  if ((not IsPossibleToMakeRoad(x  ,y+1)) or (not IsPossibleToMakeRoad(x+1,y+1)) or
+      (not IsPossibleToMakeRoad(x-1,y+1)) or (not IsPossibleToMakeRoad(x-2,y  )) or
+      (not IsPossibleToMakeRoad(x-2,y+1)) or (not IsPossibleToMakeRoad(x-2,y-1)) or
+      (not IsPossibleToMakeRoad(x-2,y-2)) or (not IsPossibleToMakeRoad(x+2,y  )) or
+      (not IsPossibleToMakeRoad(x+2,y+1)) or (not IsPossibleToMakeRoad(x+2,y-1)) or
+      (not IsPossibleToMakeRoad(x+2,y-1))) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  //Check walk possibility.
+  if  ((not States.ConnectedByWalking(x,y+1,x-1,y+1)) or (not States.ConnectedByWalking(x,y+1,x+1,y+1)) or
+       (not States.ConnectedByWalking(x,y+1,x+2,y+1)) or (not States.ConnectedByWalking(x,y+1,x+2,y  )) or
+       (not States.ConnectedByWalking(x,y+1,x+2,y-1)) or (not States.ConnectedByWalking(x,y+1,x-1,y+2)) or
+       (not States.ConnectedByWalking(x,y+1,x+1,y+2)) or (not States.ConnectedByWalking(x,y+1,x  ,y+2))) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  if (CheckEntranceTileType(x-1,y) or CheckEntranceTileType(x-1,y-2) or CheckEntranceTileType(x+1,y) or
+      CheckEntranceTileType(x+1,y-2)) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  if (CheckSidesTileType(x-1,y-3) or CheckSidesTileType(x+1,y-3) or CheckSidesTileType(x-2,y-3) or
+      CheckSidesTileType(x+2,y-3)) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  //This place is ok. We start placing storehouse here.
+  Actions.GiveHouse(playerId,HT_STOREHOUSE,x,y);
+
+  //Roads in front of storehouse.
+  Actions.GiveRoad(playerId,x  ,y+1);
+	Actions.GiveRoad(playerId,x+1,y+1);
+	Actions.GiveRoad(playerId,x-1,y+1);
+
+  Actions.GiveWares(playerId,WT_STONES,ST);
+	Actions.GiveWares(playerId,WT_GOLD,GC);
+	Actions.GiveWares(playerId,WT_TIMBER,TM);
+	Actions.GiveWares(playerId,WT_WINE,WB);
+	Actions.GiveWares(playerId,WT_LOAVES,BR);
+	Actions.GiveWares(playerId,WT_SAUSAGES,SO);
+	Actions.GiveWares(playerId,WT_FISH,FI);
+
+  //The bonus tree trunks.
+	Actions.GiveWares(playerId,WT_TREE_TRUNK,treesCount);
+
+  //Remove the object in front of the storehouse.
+	Actions.MapTileObjectSet(x,(y+1),255);
+	Actions.MapTileObjectSet(x+1,(y+1),255);
+	Actions.MapTileObjectSet(x-1,(y+1),255);
+
+  //TODO Write additional logic to let make it different for players.
+	Actions.HouseUnlock(playerId, 14); //unlock quarry
+	Actions.HouseUnlock(playerId, 9);  //unlock cutter
+
+  //Reveal huge area for vision
+	Actions.FogRevealCircle(playerId,x,y,RADD); 		//set vision after the store is placed
+
+  AddCitizens(playerId, x, y);
+
+  Players[playerId].X := x;
+  Players[playerId].Y := y;
+end;
+
+procedure PlaceRandomStorehouse(id : integer);
+var
+  wasSet: boolean;
+  x: integer;
+  y: integer;
+  boundPlayer: integer;
+begin
+
+  wasSet:= false;
+
+  while (not wasSet) do
+  begin
+
+    x := 0;
+    y := 0;
+    boundPlayer := FindBoundPlayer(id);
+
+    //If there is a bound player and storehouse for this player was placed we place storehouse using this coordinates.
+    if (boundPlayer <> -1) then
+    begin
+
+      if ((Players[boundPlayer].X > 0) and (Players[boundPlayer].Y > 0))then
+      begin
+
+        x := Players[id].XMIN + (Players[boundPlayer].X - Players[boundPlayer].XMIN);
+        y := Players[id].YMIN + (Players[boundPlayer].Y - Players[boundPlayer].YMIN);
+      end;
+    end;
+
+    //If there is no bound player or bound player still has no storehouse placed.
+    if ((x = 0) and (y = 0))then
+    begin
+      x := Players[id].XMIN+ (States.KamRandomI((Players[id].XMAX-Players[id].XMIN)))
+      y := Players[id].YMIN+ (States.KamRandomI((Players[id].YMAX-Players[id].YMIN)));
+    end;
+
+    if (TryToSetStoreHouse(id,x,y)) then
+    begin
+      wasSet:=true;
+    end;
+  end;
+end;
+
+
+//It's just a Chaotica map logic. It's not a part of random storehouse script.
+procedure MakeBridges();
+var
+// for the special tile
+XT: Integer;
+YT: Integer;
+RT, RA, RB: Integer; //rotation
+begin
+
+  //first bridge
+	for XT := 110 to 115 do
+	begin
+		for YT := 13 to 19 do
+		begin
+
+			Actions.MapTileSet(XT,YT,246,RT);
+			RA:= XT mod 2;
+			RB:= YT mod 2;
+			if RA = RB then
+			RT:= 2;
+
+			if RA <> RB then
+			RT:= 0;
+
+		end;
+	end;
+
+  //second bridge
+
+	for XT := 127 to 131 do
+	begin
+		for YT := 6 to 13 do
+		begin
+
+			Actions.MapTileSet(XT,YT,246,RT);
+			RA:= XT mod 2;
+			RB:= YT mod 2;
+			if RA = RB then
+			RT:= 2;
+
+			if RA <> RB then
+			RT:= 0;
+
+		end;
+	end;
+end;
+
+//Events------------------------------------------------------------------------
+
+procedure OnMissionStart;
+var
+  i: integer;
+begin
+  InitPlayers();
+
+  for i:= 0 to Length(Players) -1 do
+  begin
+    if (States.PlayerEnabled(i)) then
+    begin
+      PlaceRandomStorehouse(i);
+    end;
+  end;
+
+  MakeBridges();
+end;
+
+procedure OnTick;
+var i: Integer;
+begin
+
+	if States.GameTime = 2 then
+	begin
+
+		for i := 0 to Length(Players) - 1 do
+    begin
+
+			if States.PlayerEnabled(i) then
+      begin
+				Actions.CinematicStart(i);
+      end;
+    end;
+	end;
+
+
+	if States.GameTime = 30 then
+	begin
+
+		for i := 0 to Length(Players) - 1 do
+    begin
+
+			if (States.PlayerEnabled(i) and (Players[i].X > 0) and (Players[i].Y > 0) )then
+      begin
+				Actions.CinematicPanTo(i,Players[i].X,Players[i].Y,4);
+      end;
+    end;
+	end;
+
+	if States.GameTime = CIN then
+	begin
+
+		for i := 0 to Length(Players) - 1 do
+    begin
+
+			if States.PlayerEnabled(i) then
+			begin;
+      	Actions.CinematicEnd(i);
+      end;
+    end;
+	end;
+end;
+
+

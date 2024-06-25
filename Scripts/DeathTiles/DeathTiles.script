@@ -1,0 +1,387 @@
+//Kill units of players at death tiles in some period with some chance.
+//Made by Ritter des Todes.
+//09.10.2023.
+//Version 2.0.
+//Developed for r15122+
+
+//Description.
+//Using this script you can make units of players die at some map tiles you want. For example if you want to make someone freezing at snow, or falling throw ice or dying of heat at desert.
+//To import script use {$I DeathTiles.script}
+//You can add players you want to suffer using DT_AddPlayer(playerId: integer) function.
+//You can add tiles you want to suffer using DT_UpsertPlayerTile(playerId, tileId: integer) function.
+//Also you can setup how often script will work and chance of units to die using DT_DeathChance and DT_WorkPeriod variables.
+//You can change chance to die for some unit type for tile and player you want uning DT_UpsertPlayerTileUnitSettings(playerId, tileId, unitType : integer; chanceCoef : single).
+
+//Little example. Player 0 can loose at tile 30 (it's sand) his units with chance 1 to 20 every 3 seconds. Chance for scout to die at this tile is doubled.
+//Chance for swordfighter to die at this tile is 2 times less. Knight can't die at this tile. Enjoy!
+
+//const
+//  UT_SCOUT = 21;
+//  UT_KNIGHT = 22;
+//  UT_SWORD_FIGHTER  = 16;
+//procedure OnMissionStart();
+//begin
+//	DT_AddPlayer(0);
+//	DT_UpsertPlayerTile(0, 30);
+//	DT_DeathChance:=20;
+//	DT_WorkPeriod:=3;
+//  DT_UpsertPlayerTileUnitSettings(0, 30, UT_SCOUT, 2);
+//  DT_UpsertPlayerTileUnitSettings(0, 30, UT_SWORD_FIGHTER, 0.5);
+//  DT_UpsertPlayerTileUnitSettings(0, 30, UT_KNIGHT, 0);
+//end;
+
+{$EVENT evtTick:DT_KillUnitsOnTick}
+
+type DT_UnitSettings =
+record
+  TypeId:integer;
+  ChanceCoef: single;
+end;
+
+type DT_Tile =
+record
+  Id : integer;
+  UnitsSettings : array of DT_UnitSettings;
+end;
+
+type DT_Player =
+record
+  Id : integer;
+  Tiles : array of DT_Tile;
+end;
+
+
+const
+	DT_DefaultDeathChance = 100;
+	DT_DefaultWorkPeriod = 1;
+var 
+	//Array of players who will suffer cause of this script.
+	DT_Players: array of DT_Player;
+	//Chance to die. 1 to DeathChance.
+	DT_DeathChance: integer;
+	//Period of script working. In seconds.
+	DT_WorkPeriod: integer;
+
+
+function DT_FindPlayerIndex(playerId: integer) : integer;
+var
+  i : integer;
+begin
+  result := -1;
+
+  for i := 0 to Length(DT_Players)-1 do
+  begin
+    if (DT_Players[i].Id = playerId) then
+    begin
+      result := i;
+      exit;
+    end;
+  end;
+end;
+
+function DT_FindTileIndex(tilesArray: array of DT_Tile; tileId: integer) : integer;
+var
+  i : integer;
+begin
+  result := -1;
+
+  for i := 0 to Length(tilesArray)-1 do
+  begin
+    if (tilesArray[i].Id = tileId) then
+    begin
+      result := i;
+      exit;
+    end;
+  end;
+end;
+
+function DT_FindUnitSettingsIndex(settingsArray: array of DT_UnitSettings; unitType: integer) : integer;
+var
+  i : integer;
+begin
+  result := -1;
+
+  for i := 0 to Length(settingsArray)-1 do
+  begin
+    if (settingsArray[i].TypeId = unitType) then
+    begin
+      result := i;
+      exit;
+    end;
+  end;
+end;
+
+function DT_UpsertTile(tilesArray: array of DT_Tile; tile: DT_Tile) : array of DT_Tile;
+var
+  tileIntex: integer;
+  count: integer;
+begin
+  tileIntex := DT_FindTileIndex(tilesArray, tile.Id);
+  if (tileIntex <> -1) then
+  begin
+    tilesArray[tileIntex]:= tile;
+    result:=tilesArray;
+    exit;
+  end;
+  count:= Length(tilesArray);
+	setLength(tilesArray, count + 1);
+	tilesArray[count] := tile;
+  result:=tilesArray;
+end;
+
+function DT_RemoveTile(tilesArray: array of DT_Tile; tileId: integer): array of DT_Tile;
+var
+  i: integer;
+  tileIntex: integer;
+  count : integer;
+begin
+
+  tileIntex := DT_FindTileIndex(tilesArray, tileId);
+  if (tileIntex = -1) then
+  begin
+    exit;
+  end;
+
+  count:= Length(tilesArray);
+  for i:= tileIntex to count - 2 do
+  begin
+    tilesArray[i]:=tilesArray[i+1];
+  end;
+  SetLength(tilesArray, count - 1);
+  result:= tilesArray;
+end;
+
+function DT_UpsertUnitSettings(settingsArray: array of DT_UnitSettings; unitSettings: DT_UnitSettings) : array of DT_UnitSettings;
+var
+  settingsIndex: integer;
+  count: integer;
+begin
+  settingsIndex := DT_FindUnitSettingsIndex(settingsArray, unitSettings.TypeId);
+  if (settingsIndex <> -1) then
+  begin
+    settingsArray[settingsIndex]:= unitSettings;
+    result:=settingsArray;
+    exit;
+  end;
+  count:= Length(settingsArray);
+	setLength(settingsArray, count + 1);
+	settingsArray[count] := unitSettings;
+  result:=settingsArray;
+end;
+
+function DT_RemoveUnitSettings(settingsArray: array of DT_UnitSettings; unitType: integer): array of DT_UnitSettings;
+var
+  i: integer;
+  settingsIndex: integer;
+  count : integer;
+begin
+  settingsIndex := DT_FindUnitSettingsIndex(settingsArray, unitType);
+  if (settingsIndex = -1) then
+  begin
+    exit;
+  end;
+
+  count:= Length(settingsArray);
+  for i:= settingsIndex to count - 2 do
+  begin
+    settingsArray[i]:=settingsArray[i+1];
+  end;
+  SetLength(settingsArray, count - 1);
+
+  result:= settingsArray;
+end;
+
+//---------------------------------------------------------------Functions and procedures for script users---------------------------------------------------------------
+
+//Add player, that will be affected by script.
+procedure DT_AddPlayer(playerId: integer);
+var 
+	count : integer;
+  newPlayer : DT_Player;
+begin
+  if (DT_FindPlayerIndex(playerId) <> -1) then
+  begin
+    exit;
+  end;
+
+  count := Length(DT_Players);
+  newPlayer.Id := playerId;
+	setLength(DT_Players, count + 1);
+	DT_Players[count] := newPlayer;
+end;
+
+//Removing, player that will be affected by script.
+procedure DT_RemovePlayer(playerId: integer);
+var
+  i: integer;
+  playerIndex: integer;
+  count : integer;
+begin
+  playerIndex := DT_FindPlayerIndex(playerId);
+  if (playerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  count:= Length(DT_Players);
+  for i:= playerIndex to count - 2 do
+  begin
+    DT_Players[i]:=DT_Players[i+1];
+  end;
+  SetLength(DT_Players, count - 1);
+end;
+
+//Add tile where player will have chance too loose unit.
+procedure DT_UpsertPlayerTile(playerId, tileId: integer);
+var
+  playerIndex: integer;
+  newTile : DT_Tile;
+begin
+
+  playerIndex:= DT_FindPlayerIndex(playerId);
+  if (playerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  newTile.Id:= tileId;
+  DT_Players[playerIndex].Tiles := DT_UpsertTile(DT_Players[playerIndex].Tiles, newTile);
+end;
+
+//Remove tile where player will have chance too loose unit.
+procedure DT_RemovePlayerTile(playerId, tileId: integer);
+var
+  playerIndex: integer;
+begin
+
+  playerIndex:= DT_FindPlayerIndex(playerId);
+  if (playerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  DT_Players[playerIndex].Tiles := DT_RemoveTile(DT_Players[playerIndex].Tiles, tileId);
+end;
+
+//Add settings, that affect chance to die at tile for player, for some UnitType. For more info read DT_UnitSettings type fields comments.
+procedure DT_UpsertPlayerTileUnitSettings(playerId, tileId, unitType : integer; chanceCoef : single);
+var
+  playerIndex: integer;
+  tileIndex: integer;
+  newSettings: DT_UnitSettings;
+begin
+  playerIndex:= DT_FindPlayerIndex(playerId);
+  if (playerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  tileIndex := DT_FindTileIndex(DT_Players[playerIndex].Tiles, tileId);
+  if (tileIndex = -1) then
+  begin
+    exit;
+  end;
+
+  newSettings.TypeId:= unitType;
+  newSettings.ChanceCoef:= chanceCoef;
+  DT_Players[playerIndex].Tiles[tileIndex].UnitsSettings := DT_UpsertUnitSettings(DT_Players[playerIndex].Tiles[tileIndex].UnitsSettings, newSettings);
+end;
+
+//Remove settings, that affect chance to die at tile for player, for some UnitType. For more info read DT_UnitSettings type fields comments.
+procedure DT_RemovePlayerTileUnitSettings(playerId, tileId, unitType: integer);
+var
+  playerIndex: integer;
+  tileIndex: integer;
+begin
+
+  playerIndex:= DT_FindPlayerIndex(playerId);
+  if (playerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  tileIndex := DT_FindTileIndex(DT_Players[playerIndex].Tiles, tileId);
+  if (tileIndex = -1) then
+  begin
+    exit;
+  end;
+
+  DT_Players[playerIndex].Tiles[tileIndex].UnitsSettings := DT_RemoveUnitSettings(DT_Players[playerIndex].Tiles[tileIndex].UnitsSettings, unitType);
+end;
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function DT_FindUnitSettings(settingsArray: array of DT_UnitSettings; unitType : integer): DT_UnitSettings;
+var
+  settingsIndex: integer;
+  defaultUnitSettings: DT_UnitSettings;
+begin
+  defaultUnitSettings.TypeId := unitType;
+  defaultUnitSettings.ChanceCoef := 1;
+  result:= defaultUnitSettings;
+
+  settingsIndex := DT_FindUnitSettingsIndex(settingsArray, unitType);
+  if (settingsIndex <> -1) then
+  begin
+    result := settingsArray[settingsIndex];
+  end;
+end;
+
+procedure DT_TryKill(player: DT_Player; unitId: integer);
+var 
+	position : TKMPoint;
+	tileType : integer;
+  tileIndex : integer;
+  unitType : integer;
+  unitSettings : DT_UnitSettings;
+  chance: integer;
+begin
+	position := S.UnitPosition(unitId);
+	tileType := S.MapTileType(position.X, position.Y);
+
+  tileIndex := DT_FindTileIndex(player.Tiles, tileType);
+	if (tileIndex = -1) then
+	begin
+		exit;
+	end;
+
+  unitType := S.UnitType(unitId);
+  unitSettings := DT_FindUnitSettings(player.Tiles[tileIndex].UnitsSettings, unitType);
+
+  //UnitType can't die at this tile.
+  if (unitSettings.ChanceCoef = 0)then
+  begin
+    exit;
+  end;
+
+  chance:= U.IfThenI(DT_DeathChance > 0, DT_DeathChance, DT_DefaultDeathChance);
+
+	if (U.RandomRangeI(1, round(chance / unitSettings.ChanceCoef)) = 1) then
+	begin
+		A.UnitKill(unitId, false);
+	end;
+end;
+
+procedure DT_TryToKillUnits(player : DT_Player);
+var
+	i: integer;
+	unitIds : array of integer;
+begin
+	unitIds := S.PlayerGetAllUnits(player.Id);
+	for i:= 0 to Length(unitIds) - 1 do
+	begin
+		DT_TryKill(player, unitIds[i]);
+	end;
+end;
+
+procedure DT_KillUnitsOnTick();
+var 
+	i: integer;
+begin
+	if (States.GameTime mod (U.IfThenI(DT_WorkPeriod > 0, DT_WorkPeriod, DT_DefaultWorkPeriod) * 10) = 0) then
+	begin
+		for i:= 0 to Length(DT_Players) - 1 do 
+		begin
+			DT_TryToKillUnits(DT_Players[i]);
+		end;	
+	end;	
+end;

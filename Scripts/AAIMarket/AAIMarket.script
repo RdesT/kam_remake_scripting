@@ -1,0 +1,474 @@
+//Management of leather weapons estimates for AAI.
+//Made by Ritter des Todes.
+//20.02.2024.
+//Version 1.0.
+//Developed for r15122+
+
+//Description.
+//Best usage is for AAI who plays leather only. It will also work for default AAI but it will be not so valuable. Script makes AAI trade all weapon estimates to rework it to new weapons and to trade them for gold.
+//Leather jackets go for tree trunks to let AAI make weapons he needs. Shields go to corn to balance leather losses. Shields trade when shield amount by AAI is has more then 2/3 leather jackets.
+
+//To import script use {$I AAIMarket.script}
+//You can setup how often script will work and threshold using AAIM_Period variable. (In ticks). Default value is every 10 seconds.
+//You can setup threshold value when script will start working using AAIM_Threshold variable. Default value is 8.
+//You can disable script or enable it at some moment using AAIM_Disabled variable.
+
+//Little example. Here script will work every 30 seconds and will trigger when you will have more then 15 leather/wood weapons in barracks. Enjoy!
+
+//procedure OnMissionStart();
+//begin
+//  AAIM_Period := 300;
+//  AAIM_Threshold := 15;
+//end;
+
+//TODO. Think about trades for iron. Also make some trades for food if needed.
+
+
+{$EVENT evtMissionStart:AAIM_OnMissionStart}
+{$EVENT evtTick:AAIM_OnTick}
+{$EVENT evtHouseBuilt:AAIM_OnHouseBuilt}
+{$EVENT evtHouseDestroyed:AAIM_OnHouseDestroyed}
+
+type AAIM_Player =
+record
+  Id: integer;
+  BarracksId: integer;
+  MarketIds: TIntegerArray;
+  StoreHouseIds : TIntegerArray;
+  InnIds : TIntegerArray;
+end;
+
+const
+  WT_TREE_TRUNK    =  0;
+  WT_GOLD          =  7;
+  WT_CORN          =  9;
+  WT_WOODEN_SHIELD = 16;
+  WT_LEATHER_ARMOR = 18;
+  WT_HAND_AXES     = 20;
+  WT_LANCES        = 22;
+  WT_LONGBOWS      = 24;
+
+  WT_WINE          =  8;
+  WT_LOAVES        = 10;
+  WT_SAUSAGES      = 13;
+  WT_FISH          = 27;
+
+
+  AAIM_DefaultPeriod = 100;
+  AAIM_DefaultThreshold = 8;
+  AAIM_DefaultMaxTradeAmount = 5;
+
+var
+  AAIM_Players: array of AAIM_Player;
+  AAIM_Period : integer;
+  AAIM_Threshold: integer;
+  AAIM_Disabled : boolean;
+
+function AAIM_FindPlayerIndex(playerId: integer) : integer;
+var
+  i : integer;
+begin
+  result := -1;
+
+  for i := 0 to Length(AAIM_Players)-1 do
+  begin
+    if (AAIM_Players[i].Id = playerId) then
+    begin
+      result := i;
+      exit;
+    end;
+  end;
+end;
+
+function AAIM_GetThreshold(): integer;
+begin
+  result := U.IfThenI(AAIM_Threshold > 0, AAIM_Threshold, AAIM_DefaultThreshold);
+end;
+
+procedure AAIM_AddPlayer(playerId: integer);
+var
+  count : integer;
+  newPlayer : AAIM_Player;
+begin
+  count := Length(AAIM_Players);
+  newPlayer.Id := playerId;
+  setLength(AAIM_Players, count + 1);
+  AAIM_Players[count] := newPlayer;
+end;
+
+function AAIM_FindPlayerFreeMarket(player: AAIM_Player) : integer;
+var
+  i: integer;
+begin
+  result := 0;
+  for i := 0 to Length(player.MarketIds) - 1 do
+  begin
+    if (S.MarketOrderAmount(player.MarketIds[i]) = 0) then
+    begin
+      result := player.MarketIds[i];
+      exit;
+    end;
+  end;
+end;
+
+function AAIM_IsAnyFoodAtHouse(aHouse: integer):boolean;
+begin
+  result := false;
+
+  if (S.HouseResourceAmount(aHouse, WT_WINE) > 0) then
+  begin
+    result := true;
+    exit;
+  end;
+
+  if (S.HouseResourceAmount(aHouse, WT_LOAVES) > 0) then
+  begin
+    result := true;
+    exit;
+  end;
+
+  if (S.HouseResourceAmount(aHouse, WT_SAUSAGES) > 0) then
+  begin
+    result := true;
+    exit;
+  end;
+
+  if (S.HouseResourceAmount(aHouse, WT_FISH) > 0) then
+  begin
+    result := true;
+    exit;
+  end;
+
+end;
+
+function AAIM_IsStarving(player: AAIM_Player) : boolean;
+var
+  i: integer;
+begin
+  result := true;
+  for i := 0 to Length(player.StoreHouseIds) - 1 do
+  begin
+    if (AAIM_IsAnyFoodAtHouse(player.StoreHouseIds[i])) then
+    begin
+      result := false;
+      exit;
+    end;
+  end;
+
+  for i := 0 to Length(player.InnIds) - 1 do
+  begin
+    if (AAIM_IsAnyFoodAtHouse(player.InnIds[i])) then
+    begin
+      result := false;
+      exit;
+    end;
+  end;
+end;
+
+function AAIM_IsAnyGoldStored(player: AAIM_Player) : boolean;
+var
+  i: integer;
+begin
+  result := false;
+  for i := 0 to Length(player.StoreHouseIds) - 1 do
+  begin
+    if (S.HouseResourceAmount(player.StoreHouseIds[i], WT_GOLD) > 0) then
+    begin
+      result := true;
+      exit;
+    end;
+  end;
+end;
+
+procedure AAIM_MarketSetTrade(player: AAIM_Player; tradeFrom, tradeTo, amount: integer);
+var
+  freeMarketId: integer;
+begin
+  freeMarketId := AAIM_FindPlayerFreeMarket(player);
+  if (freeMarketId <> 0) then
+  begin
+    A.MarketSetTrade(freeMarketId, tradeFrom, tradeTo, U.IfThenI(amount > AAIM_DefaultMaxTradeAmount, AAIM_DefaultMaxTradeAmount, amount));
+  end;
+end;
+
+procedure AAIM_CheckTrades(player : AAIM_Player);
+var
+  leather: integer;
+  axes: integer;
+  lances: integer;
+  bows: integer;
+  recruits: integer;
+  shields: integer;
+  woodenWeapons: integer;
+begin
+
+  //AAI has no barracks.
+  if (player.BarracksId = 0) then
+  begin
+    exit;
+  end;
+
+  recruits := S.HouseBarracksRecruitsCount(player.BarracksId);
+  leather := S.HouseResourceAmount(player.BarracksId, WT_LEATHER_ARMOR);
+  axes :=  S.HouseResourceAmount(player.BarracksId, WT_HAND_AXES);
+  lances :=  S.HouseResourceAmount(player.BarracksId, WT_LANCES);
+  bows :=  S.HouseResourceAmount(player.BarracksId, WT_LONGBOWS);
+  shields := S.HouseResourceAmount(player.BarracksId, WT_WOODEN_SHIELD);
+
+  woodenWeapons := axes + bows + lances;
+
+  //If AAI needs food.
+  if (AAIM_IsStarving(player)) then
+  begin
+    if (leather > AAIM_GetThreshold()) then
+    begin
+       AAIM_MarketSetTrade(player, WT_LEATHER_ARMOR, WT_SAUSAGES, AAIM_DefaultMaxTradeAmount);
+    end else
+    begin
+      if (woodenWeapons > AAIM_GetThreshold()) then
+      begin
+        if ((axes > bows) and (axes > lances)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_HAND_AXES, WT_SAUSAGES, AAIM_DefaultMaxTradeAmount);
+          exit;
+        end;
+        if ((bows > axes) and (bows > lances)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_LONGBOWS, WT_SAUSAGES, AAIM_DefaultMaxTradeAmount);
+          exit;
+        end;
+        if ((lances > bows) and (lances > axes)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_LANCES, WT_SAUSAGES, AAIM_DefaultMaxTradeAmount);
+          exit;
+        end;
+      end;
+    end;
+  end;
+
+  if (recruits > 0) then
+  begin
+    //AAI has resources and recruits, but he's not releasing soldiers. We don't care about it.
+    if (leather > 0) and ((woodenWeapons) > 0) then
+    begin
+      exit;
+    end;
+
+    //AAI has too many leather armors.
+    if (leather > AAIM_GetThreshold()) then
+    begin
+      //AAI has too many shields.
+      if ((leather * 2 / 3) < shields) then
+      begin
+        AAIM_MarketSetTrade(player, WT_WOODEN_SHIELD, WT_CORN, shields - (leather * 2 / 3));
+      end;
+
+      AAIM_MarketSetTrade(player, WT_LEATHER_ARMOR, WT_TREE_TRUNK, leather - AAIM_GetThreshold());
+    end;
+
+    //AAI has too many shields.
+    if (shields > AAIM_GetThreshold()) then
+    begin
+      AAIM_MarketSetTrade(player, WT_WOODEN_SHIELD, WT_CORN, shields - AAIM_GetThreshold());
+    end;
+
+  end else
+  begin
+
+    //AAI has too many shields.
+    if (shields > AAIM_GetThreshold()) then
+    begin
+      AAIM_MarketSetTrade(player, WT_WOODEN_SHIELD, WT_CORN, shields - AAIM_GetThreshold());
+    end;
+
+    //If we have any gold stored, we should not trade it.
+    if (AAIM_IsAnyGoldStored(player)) then
+    begin
+      exit;
+    end;
+
+    //If we have no recruits and we have weapons, then we should trade for gold.
+    if ((leather > AAIM_GetThreshold()) and (woodenWeapons > AAIM_GetThreshold())) then
+    begin
+      if (leather > woodenWeapons)  then
+      begin
+        AAIM_MarketSetTrade(player, WT_LEATHER_ARMOR, WT_GOLD, leather - AAIM_GetThreshold());
+        exit;
+      end else
+      begin
+        if ((axes > bows) and (axes > lances)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_HAND_AXES, WT_GOLD, woodenWeapons - AAIM_GetThreshold());
+          exit;
+        end;
+        if ((bows > axes) and (bows > lances)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_LONGBOWS, WT_GOLD, woodenWeapons - AAIM_GetThreshold());
+          exit;
+        end;
+        if ((lances > bows) and (lances > axes)) then
+        begin
+          AAIM_MarketSetTrade(player, WT_LANCES, WT_GOLD, woodenWeapons - AAIM_GetThreshold());
+          exit;
+        end;
+
+      end;
+    end;
+  end;
+
+end;
+
+procedure AAIM_RegisterHouse(aHouse: Integer);
+var
+  houseType : TKMHouseType;
+  index : integer;
+  playerId : integer;
+  count: integer;
+begin
+
+  houseType := S.HouseTypeEx(aHouse);
+
+  if ((houseType <> htStore) and (houseType <> htMarket) and (houseType <> htBarracks) and (houseType <> htInn)) then
+  begin
+    exit;
+  end;
+
+  playerId := S.HouseOwner(aHouse);
+  index := AAIM_FindPlayerIndex(playerId);
+
+  if (index = -1) then
+  begin
+    exit;
+  end;
+
+  if (houseType = htStore) then
+  begin
+    count := Length(AAIM_Players[index].StoreHouseIds);
+    setLength(AAIM_Players[index].StoreHouseIds, count + 1);
+    AAIM_Players[index].StoreHouseIds[count] := aHouse;
+  end;
+
+  if (houseType = htMarket) then
+  begin
+    count := Length(AAIM_Players[index].MarketIds);
+    setLength(AAIM_Players[index].MarketIds, count + 1);
+    AAIM_Players[index].MarketIds[count] := aHouse;
+  end;
+
+  if (houseType = htInn) then
+  begin
+    count := Length(AAIM_Players[index].InnIds);
+    setLength(AAIM_Players[index].InnIds, count + 1);
+    AAIM_Players[index].InnIds[count] := aHouse;
+  end;
+
+  if (houseType = htBarracks) then
+    AAIM_Players[index].BarracksId := aHouse;
+  begin
+  end;
+
+end;
+
+function AAIM_TIntegerArrayRemoveElement(arr : TIntegerArray; element: integer): TIntegerArray;
+var
+  i:integer;
+begin
+  for i:= 0 to Length(arr) - 1 do
+    begin
+      if (arr[i] = element) then
+      begin
+        result := U.ArrayRemoveIndexI(i, arr);
+        break;
+      end;
+    end;
+end;
+
+
+//-------------------Events--------------------------------------------------------------------------
+
+
+procedure AAIM_OnHouseBuilt(aHouse: Integer);
+begin
+  AAIM_RegisterHouse(aHouse);
+end;
+
+procedure AAIM_OnHouseDestroyed(aHouse: Integer; aDestroyerIndex: Integer);
+var
+  houseType : TKMHouseType;
+  index : integer;
+  playerId : integer;
+begin
+
+  houseType := S.HouseTypeEx(aHouse);
+
+  if ((houseType <> htStore) and (houseType <> htMarket) and (houseType <> htBarracks)) then
+  begin
+    exit;
+  end;
+
+  playerId := S.HouseOwner(aHouse);
+  index := AAIM_FindPlayerIndex(playerId);
+
+  if (index = -1) then
+  begin
+    exit;
+  end;
+
+  if (houseType = htStore) then
+  begin
+    AAIM_Players[index].StoreHouseIds := AAIM_TIntegerArrayRemoveElement(AAIM_Players[index].StoreHouseIds, aHouse);
+  end;
+
+  if (houseType = htMarket) then
+  begin
+    AAIM_Players[index].MarketIds := AAIM_TIntegerArrayRemoveElement(AAIM_Players[index].MarketIds, aHouse);
+  end;
+
+  if (houseType = htInn) then
+  begin
+    AAIM_Players[index].InnIds := AAIM_TIntegerArrayRemoveElement(AAIM_Players[index].InnIds, aHouse);
+  end;
+
+  //Only 1 barracks supported. AAI makes only 1.
+  if (houseType = htBarracks) then
+  begin
+    AAIM_Players[index].BarracksId := 0;
+  end;
+
+end;
+
+
+procedure AAIM_OnMissionStart;
+var
+  i: integer;
+  j: integer;
+  ids: array of integer;
+begin
+  for i:=0 to S.StatPlayerCount() do
+  begin
+    if (S.PlayerIsAdvancedAI(i)) then
+    begin
+      AAIM_AddPlayer(i);
+      ids := S.PlayerGetAllHouses(i);
+      for j:=0 to Length(ids) - 1 do
+      begin
+        AAIM_RegisterHouse(ids[j]);
+      end;
+    end;
+  end;
+end;
+
+
+procedure AAIM_OnTick;
+var
+i: integer;
+begin
+
+  if (not AAIM_Disabled and (States.GameTime mod U.IfThenI(AAIM_Period > 0, AAIM_Period, AAIM_DefaultPeriod) = 0)) then
+  begin
+    for i := 0 to Length(AAIM_Players) - 1 do
+    begin
+      AAIM_CheckTrades(AAIM_Players[i]);
+    end;
+  end;
+end;
