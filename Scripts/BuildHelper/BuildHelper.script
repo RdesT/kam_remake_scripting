@@ -231,7 +231,7 @@ begin
     BS_Default_60:
       result := BH_Default60_GetAdvices(playerIndex, buildings, buildingHouses, plannedBuildings);
     BS_IronStoring_60:
-      result := BH_IronStoring_GetAdvices(playerIndex, buildings, buildingHouses, plannedBuildings);
+      result := BH_IronStoring60_GetAdvices(playerIndex, buildings, buildingHouses, plannedBuildings);
     BS_Default35:
       result := BH_Default60_GetAdvices(playerIndex, buildings, buildingHouses, plannedBuildings);
   end;
