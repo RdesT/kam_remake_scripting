@@ -1,0 +1,516 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="menuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="OpenMapFolderMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 21</value>
+  </data>
+  <data name="OpenMapFolderMenuItem.Text" xml:space="preserve">
+    <value>Open map folder</value>
+  </data>
+  <data name="LanguageToolStrip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 21</value>
+  </data>
+  <data name="LanguageToolStrip.Text" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="HelpToolStrip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 21</value>
+  </data>
+  <data name="HelpToolStrip.Text" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="HelpToolStrip.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="ExitToolStrip.Size" type="System.Drawing.Size, System.Drawing">
+    <value>40, 21</value>
+  </data>
+  <data name="ExitToolStrip.Text" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="menuStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="menuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>785, 25</value>
+  </data>
+  <data name="menuStrip1.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="menuStrip1.Text" xml:space="preserve">
+    <value>menuStrip1</value>
+  </data>
+  <data name="&gt;&gt;menuStrip1.Name" xml:space="preserve">
+    <value>menuStrip1</value>
+  </data>
+  <data name="&gt;&gt;menuStrip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;menuStrip1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;menuStrip1.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="PeaceTimeComboBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>306, 45</value>
+  </data>
+  <data name="PeaceTimeComboBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>53, 21</value>
+  </data>
+  <data name="PeaceTimeComboBox.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeComboBox.Name" xml:space="preserve">
+    <value>PeaceTimeComboBox</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeComboBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeComboBox.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeComboBox.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="PeaceTimeLabel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="PeaceTimeLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>239, 48</value>
+  </data>
+  <data name="PeaceTimeLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>60, 13</value>
+  </data>
+  <data name="PeaceTimeLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="PeaceTimeLabel.Text" xml:space="preserve">
+    <value>Peace time</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeLabel.Name" xml:space="preserve">
+    <value>PeaceTimeLabel</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeLabel.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;PeaceTimeLabel.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="CustomStrategiesCheckBox.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="CustomStrategiesCheckBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>553, 47</value>
+  </data>
+  <data name="CustomStrategiesCheckBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 17</value>
+  </data>
+  <data name="CustomStrategiesCheckBox.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="CustomStrategiesCheckBox.Text" xml:space="preserve">
+    <value>Custom strategies</value>
+  </data>
+  <data name="&gt;&gt;CustomStrategiesCheckBox.Name" xml:space="preserve">
+    <value>CustomStrategiesCheckBox</value>
+  </data>
+  <data name="&gt;&gt;CustomStrategiesCheckBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CustomStrategiesCheckBox.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;CustomStrategiesCheckBox.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="DefaultStrategyComboBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>454, 44</value>
+  </data>
+  <data name="DefaultStrategyComboBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>90, 21</value>
+  </data>
+  <data name="DefaultStrategyComboBox.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyComboBox.Name" xml:space="preserve">
+    <value>DefaultStrategyComboBox</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyComboBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyComboBox.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyComboBox.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="DefaultStrategyLabel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="DefaultStrategyLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>366, 49</value>
+  </data>
+  <data name="DefaultStrategyLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>81, 13</value>
+  </data>
+  <data name="DefaultStrategyLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="DefaultStrategyLabel.Text" xml:space="preserve">
+    <value>Default strategy</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyLabel.Name" xml:space="preserve">
+    <value>DefaultStrategyLabel</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyLabel.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;DefaultStrategyLabel.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="CreateFilesButton.Location" type="System.Drawing.Point, System.Drawing">
+    <value>664, 44</value>
+  </data>
+  <data name="CreateFilesButton.Size" type="System.Drawing.Size, System.Drawing">
+    <value>109, 21</value>
+  </data>
+  <data name="CreateFilesButton.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="CreateFilesButton.Text" xml:space="preserve">
+    <value>Update scripts</value>
+  </data>
+  <data name="&gt;&gt;CreateFilesButton.Name" xml:space="preserve">
+    <value>CreateFilesButton</value>
+  </data>
+  <data name="&gt;&gt;CreateFilesButton.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CreateFilesButton.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;CreateFilesButton.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="MapNameTextBox.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="MapNameTextBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>88, 45</value>
+  </data>
+  <data name="MapNameTextBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 20</value>
+  </data>
+  <data name="MapNameTextBox.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;MapNameTextBox.Name" xml:space="preserve">
+    <value>MapNameTextBox</value>
+  </data>
+  <data name="&gt;&gt;MapNameTextBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MapNameTextBox.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;MapNameTextBox.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="MapNameLabel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="MapNameLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 48</value>
+  </data>
+  <data name="MapNameLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>57, 13</value>
+  </data>
+  <data name="MapNameLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="MapNameLabel.Text" xml:space="preserve">
+    <value>Map name</value>
+  </data>
+  <data name="&gt;&gt;MapNameLabel.Name" xml:space="preserve">
+    <value>MapNameLabel</value>
+  </data>
+  <data name="&gt;&gt;MapNameLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MapNameLabel.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;MapNameLabel.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="CurrentDirrectoryTextBox.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="CurrentDirrectoryTextBox.Location" type="System.Drawing.Point, System.Drawing">
+    <value>88, 14</value>
+  </data>
+  <data name="CurrentDirrectoryTextBox.Size" type="System.Drawing.Size, System.Drawing">
+    <value>685, 20</value>
+  </data>
+  <data name="CurrentDirrectoryTextBox.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryTextBox.Name" xml:space="preserve">
+    <value>CurrentDirrectoryTextBox</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryTextBox.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryTextBox.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryTextBox.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="CurrentDirrectoryLabel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="CurrentDirrectoryLabel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 17</value>
+  </data>
+  <data name="CurrentDirrectoryLabel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 13</value>
+  </data>
+  <data name="CurrentDirrectoryLabel.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="CurrentDirrectoryLabel.Text" xml:space="preserve">
+    <value>Current folder</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryLabel.Name" xml:space="preserve">
+    <value>CurrentDirrectoryLabel</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryLabel.Parent" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;CurrentDirrectoryLabel.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="TopPannel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 25</value>
+  </data>
+  <data name="TopPannel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>785, 75</value>
+  </data>
+  <data name="TopPannel.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="TopPannel.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;TopPannel.Name" xml:space="preserve">
+    <value>TopPannel</value>
+  </data>
+  <data name="&gt;&gt;TopPannel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TopPannel.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;TopPannel.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="BotPannel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 97</value>
+  </data>
+  <data name="BotPannel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>785, 129</value>
+  </data>
+  <data name="BotPannel.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="BotPannel.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;BotPannel.Name" xml:space="preserve">
+    <value>BotPannel</value>
+  </data>
+  <data name="&gt;&gt;BotPannel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;BotPannel.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;BotPannel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>6, 13</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>785, 98</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
+    <value>CenterScreen</value>
+  </data>
+  <data name="&gt;&gt;OpenMapFolderMenuItem.Name" xml:space="preserve">
+    <value>OpenMapFolderMenuItem</value>
+  </data>
+  <data name="&gt;&gt;OpenMapFolderMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LanguageToolStrip.Name" xml:space="preserve">
+    <value>LanguageToolStrip</value>
+  </data>
+  <data name="&gt;&gt;LanguageToolStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;HelpToolStrip.Name" xml:space="preserve">
+    <value>HelpToolStrip</value>
+  </data>
+  <data name="&gt;&gt;HelpToolStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ExitToolStrip.Name" xml:space="preserve">
+    <value>ExitToolStrip</value>
+  </data>
+  <data name="&gt;&gt;ExitToolStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>BuildingHelperForm</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+</root>
