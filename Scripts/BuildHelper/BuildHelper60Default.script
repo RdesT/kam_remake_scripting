@@ -248,16 +248,6 @@ begin
     exit;
   end;
 
-  if (not S.PlayerHouseTypeCanBuild(player.Id, htWoodcutters)) then
-  begin
-    if (planning) then
-    begin
-      result := BH_AddBuildingInfo(result, htWoodcutters);
-    end;
-
-    exit;
-  end;
-
   case buildings.Woodcutters of
     6:
       if (buildings.Farm > 4) then
