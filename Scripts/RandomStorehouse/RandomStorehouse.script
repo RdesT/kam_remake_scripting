@@ -1,11 +1,11 @@
 //Random storehouse placement script. With possibilities to place storehouses mirrored.
 //The original script was written by Thunder.
 //Rewriten by Ritter des Todes.
-//01.02.2024.
-//Version 1.0.
+//27.07.2024.
+//Version 1.1.
 //Developed for r15122.
 
-//To import script use {$I RandomStorehouse.script}
+//To import script use {$INCLUDE RandomStorehouse.script}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //DESCRIPTION OF USER INTERFACE.
@@ -21,8 +21,11 @@
 //Players should have same random coordinates range and it should be possible to place storehouse mirrored at map. Actually map should be mirrored. Good examples of maps will be Chaotica/Mercury mission.
 //RNST_BindPlayers(first, second: integer);
 
+//Creates a player who will have same settings as other player except randomization rectangle. This players will be bound and will have mirrored storehouse placement.
+//RNST_InitBoundPlayer(playerId, boundPlayerId, xMin, xMax, yMin, yMax: integer);
+
 //Sets setting for script to add some units at start after storehouse will be placed. Works only foe citizens!!! Don't add any warriors here.
-//RNST_SetCitizensAtStart(playerId: integer; unitType: TKMUnitType; count: integer);
+//RNST_SetPlayerCitizensAtStart(playerId: integer; unitType: TKMUnitType; count: integer);
 
 //Sets setting for script to add some resources to starting store house for all players if they have no custom settings.
 //RNST_SetWaresAtStart(wareType: TKMWareType; count: integer);
@@ -53,12 +56,12 @@
 //begin
 
   //Init 4 players randomization will be from (15;2) to (68;234).
-  //RNST_InitPlayerEx(0, 15,68,2,234);
-  //RNST_InitPlayerEx(1, 15,68,2,234);
+  //RNST_InitPlayer(0, 15,68,2,234, false);
+  //RNST_InitPlayer(1, 15,68,2,234, false);
 
-  //Init 4 players randomization will be from (15;2) to (68;234). Also giving 5 serfs and workers at start.
-  //RNST_InitPlayer(2, 15,68,2,234,5,5);
-  //RNST_InitPlayer(3, 15,68,2,234,5,5);
+  //Init 4 players randomization will be from (15;2) to (68;234). Also giving 5 serfs and workers at start. They will have slow build order.
+  //RNST_InitPlayerEx(2, 15,68,2,234,5,5, true);
+  //RNST_InitPlayerEx(3, 15,68,2,234,5,5, true);
 
   //Players 1 and 2 will have mirrored location of storehouse.
   //RNST_BindPlayers(0,1);
@@ -76,7 +79,7 @@
   //RNST_SetPlayerWaresAtStart(0, wtFish, 100);
 
   //Giving player 0 two additional farmers at start.
-  //RNST_SetCitizensAtStart(0, utFarmer,2);
+  //RNST_SetPlayerCitizensAtStart(0, utFarmer,2);
 
   //Unlock farm and mill at start for player 0.
   //RNST_SetUnlockedBuildingTypes(0, [htFarm, htMill]);
@@ -104,6 +107,7 @@
 
 
 {$EVENT evtMissionStart:RNST_OnMissionStart}
+{$EVENT evtHouseBuilt:RNST_OnHouseBuilt}
 {$EVENT evtTick:RNST_OnTick}
 
 type RNST_WareSetting =
@@ -131,6 +135,8 @@ record
   StartingResourses: array of RNST_WareSetting;
   UnlockedBuildings: TKMHouseTypeSet;
 
+  SlowBuildOrder: boolean;
+
   SightRadius: integer;
 end;
 
@@ -143,7 +149,6 @@ end;
 const
   //Maximum coal amount tile where can be storehouse placed.
   RNST_MaxCoalAmount = 2;
-
   //Default sight radius for all players.
   RNST_DefaultSightRadius = 20;
   //Default cinematics length. In ticks.
@@ -154,6 +159,8 @@ var
   RNST_Bindings: array of RNST_Binding;
   RNST_WareSettings: array of RNST_WareSetting;
 
+  //Is allowed to place randomly storehouse at coal tiles.
+  RNST_IsAllowedToPlaceAtCoal : boolean;
   //Custom sight radius for all players.
   RNST_SightRadius : integer;
   //Custom cinematic length. In ticks.
@@ -263,7 +270,7 @@ begin
   end;
 end;
 
-function RNST_IsPossibleToMakeStoreHouse(playerId, x,y: integer): boolean;
+function RNST_IsPossibleToMakeStoreHouse(x,y: integer): boolean;
 var
   i: integer;
   j: integer;
@@ -306,11 +313,11 @@ begin
 
 end;
 
-function RNST_IsPossibleToMakeRoad(x,y: integer):boolean;
+function RNST_IsPossibleToMakeRoad(playerId,x,y: integer):boolean;
 var
   isRoadPlaced: boolean;
 begin
-  isRoadPlaced := Actions.GiveRoad(0,x,y);
+  isRoadPlaced := Actions.GiveRoad(playerId,x,y);
   if (isRoadPlaced) then
   begin
     result := true;
@@ -526,6 +533,7 @@ begin
   begin
     if(houseType in player.UnlockedBuildings) then
     begin
+      A.HouseAllow(player.Id, RNST_GetHouseType(houseType), true);
       A.HouseUnlock(player.Id, RNST_GetHouseType(houseType));
     end;
   end;
@@ -537,7 +545,7 @@ var
   index: integer;
 begin
 
-  if (not RNST_IsPossibleToMakeStoreHouse(playerId, x,y)) then
+  if (not RNST_IsPossibleToMakeStoreHouse(x,y)) then
   begin
     exit;
   end;
@@ -555,10 +563,13 @@ begin
     exit;
   end;
 
-  //Check that storehouse is not locatated deep in coal.
-  if (RNST_IsLargeCoalTile(x-1,y) or RNST_IsLargeCoalTile(x-1,y-2) or RNST_IsLargeCoalTile(x-1,y-1)) then
+  if (not RNST_IsAllowedToPlaceAtCoal) then
   begin
-    exit;
+    //Check that storehouse is not locatated deep in coal.
+    if (RNST_IsLargeCoalTile(x-1,y) or RNST_IsLargeCoalTile(x-1,y-2) or RNST_IsLargeCoalTile(x-1,y-1)) then
+    begin
+      exit;
+    end;
   end;
 
   //Check top of storhouse for gold/iron/stone mountains.
@@ -635,6 +646,14 @@ begin
     begin
       //Adding wares to storehouse.
       RNST_AddWares(storeHouseId, player.StartingResourses);
+
+      if (player.SlowBuildOrder) then
+      begin
+        A.HouseAllow(player.Id, RNST_GetHouseType(htInn), false);
+        A.HouseAllow(player.Id, RNST_GetHouseType(htQuarry), false);
+        A.HouseAllow(player.Id, RNST_GetHouseType(htWoodcutters), false);
+      end;
+
       RNST_UnlockBuildingTypes(player);
 
       if (not RNST_RemoveInitialFogDisabled) then
@@ -679,7 +698,7 @@ end;
 //playerId - id of player, that will have this units at start.
 //unitType - type of units you want to add.
 //count - the amount of units.
-procedure RNST_SetCitizensAtStart(playerId: integer; unitType: TKMUnitType; count: integer);
+procedure RNST_SetPlayerCitizensAtStart(playerId: integer; unitType: TKMUnitType; count: integer);
 var
   playerIndex : integer;
   settingIndex : integer;
@@ -806,12 +825,13 @@ begin
 end;
 
 //Initializing player for script.
-//playerId - id of player, that will have this units at start.
+//playerId - id of player.
 //xMin - minimum X value.
 //xMax - maximum X value.
 //yMin - minimum Y value.
 //yMax - maximum Y value.
-procedure RNST_InitPlayer(playerId, xMin, xMax, yMin, yMax : integer);
+//slowBuildOrder - defines of player have to make Inn before quarries and quarries before woodcutters.
+procedure RNST_InitPlayer(playerId, xMin, xMax, yMin, yMax : integer; slowBuildOrder: boolean);
 var
   index: integer;
   count: integer;
@@ -830,6 +850,7 @@ begin
   newPlayer.XMAX := xMax;
   newPlayer.YMIN := yMin;
   newPlayer.YMAX := yMax;
+  newPlayer.SlowBuildOrder := slowBuildOrder;
 
   setLength(RNST_Players, count + 1);
   RNST_Players[count] := newPlayer;
@@ -839,19 +860,57 @@ end;
 //Same as RNST_InitPlayer, but here you can also add starting serfs and workers count.
 //workersCount - the amount of workers at start.
 //serfsCount - the amount of serfs at start.
-procedure RNST_InitPlayerEx(playerId, xMin, xMax, yMin, yMax, workersCount, serfsCount: integer);
+//slowBuildOrder - defines of player have to make Inn before quarries and quarries before woodcutters.
+procedure RNST_InitPlayerEx(playerId, xMin, xMax, yMin, yMax, workersCount, serfsCount: integer; slowBuildOrder: boolean);
 begin
 
-  RNST_InitPlayer(playerId, xMin, xMax, yMin, yMax);
-  RNST_SetCitizensAtStart(playerId, utSerf, serfsCount);
-  RNST_SetCitizensAtStart(playerId, utBuilder, workersCount);
+  RNST_InitPlayer(playerId, xMin, xMax, yMin, yMax, slowBuildOrder);
+  RNST_SetPlayerCitizensAtStart(playerId, utSerf, serfsCount);
+  RNST_SetPlayerCitizensAtStart(playerId, utBuilder, workersCount);
 end;
 
+//Initializing player for script. This player will have same settings as bound player except randomization rectangle.
+//playerId - id of player.
+//boundPlayerId - from this player all settings will be copied and player will be bound to it.
+//xMin - minimum X value.
+//xMax - maximum X value.
+//yMin - minimum Y value.
+//yMax - maximum Y value.
+procedure RNST_InitBoundPlayer(playerId, boundPlayerId, xMin, xMax, yMin, yMax: integer);
+var
+  i: integer;
+  boundIndex: integer;
+
+begin
+
+  boundIndex := RNST_FindPlayerIndex(boundPlayerId);
+
+  if (boundIndex = -1) then
+  begin
+    exit;
+  end;
+
+  RNST_InitPlayer(playerId, xMin, xMax, yMin, yMax, RNST_Players[boundIndex].SlowBuildOrder);
+
+  for i:= 0 to High(RNST_Players[boundIndex].StartingUnits) do
+  begin
+    RNST_SetPlayerCitizensAtStart(playerId, RNST_Players[boundIndex].StartingUnits[i].UnitType, RNST_Players[boundIndex].StartingUnits[i].Count)
+  end;
+
+  for i:= 0 to High(RNST_Players[boundIndex].StartingResourses) do
+  begin
+    RNST_SetPlayerWaresAtStart(playerId, RNST_Players[boundIndex].StartingResourses[i].WareType, RNST_Players[boundIndex].StartingResourses[i].Count)
+  end;
+
+  RNST_SetUnlockedBuildingTypes(playerId, RNST_Players[boundIndex].UnlockedBuildings);
+  RNST_SetPlayerSightRadius(playerId, RNST_Players[boundIndex].SightRadius)
+
+  RNST_BindPlayers(playerId, boundPlayerId);
+end;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //Events----------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 procedure RNST_OnMissionStart;
 var
@@ -865,6 +924,23 @@ begin
       RNST_PlaceRandomStorehouse(RNST_Players[i]);
     end;
   end;
+
+  //for i:= 0 to High(Players) do
+  //begin
+  //  if (S.PlayerEnabled(i)) then
+  //  begin
+  //    A.FogCoverAll(i);
+  //  end;
+  //end;
+
+  //for i:= 0 to High(Players) do
+  //begin
+  //  if (S.PlayerEnabled(i)) then
+  //  begin
+  //    A.FogRevealCircle(i,RNST_Players[i].X,Players[i].Y,Players[i].SightRadius);
+  //    ShareFog(i);
+  //  end;
+  //end;
 
 end;
 
@@ -882,7 +958,7 @@ begin
 	if S.GameTime = 2 then
 	begin
 
-		for i := 0 to Length(RNST_Players) - 1 do
+		for i := 0 to High(RNST_Players) do
     begin
 
 			if S.PlayerEnabled(RNST_Players[i].Id) then
@@ -896,7 +972,7 @@ begin
 	if States.GameTime = 30 then
 	begin
 
-		for i := 0 to Length(RNST_Players) - 1 do
+		for i := 0 to High(RNST_Players) do
     begin
 
 			if (S.PlayerEnabled(RNST_Players[i].Id)) then
@@ -910,7 +986,7 @@ begin
 	if States.GameTime = U.IfThenI(RNST_CinematicLength > 0, RNST_CinematicLength, RNST_DefaultCinematicLength) then
 	begin
 
-		for i := 0 to Length(RNST_Players) - 1 do
+		for i := 0 to High(RNST_Players) do
     begin
 
 			if S.PlayerEnabled(i) then
@@ -921,3 +997,22 @@ begin
 	end;
 end;
 
+procedure RNST_OnHouseBuilt(aHouse: Integer);
+var
+  playerIndex: integer;
+
+begin
+
+  playerIndex := RNST_FindPlayerIndex(S.HouseOwner(aHouse));
+
+  if (not RNST_Players[playerIndex].SlowBuildOrder) then
+  begin
+    exit;
+  end;
+
+  case States.HouseTypeEx(aHouse) of
+    htSchool: A.HouseAllow(States.HouseOwner(aHouse), RNST_GetHouseType(htInn), True);
+    htInn:    A.HouseAllow(States.HouseOwner(aHouse), RNST_GetHouseType(htQuarry), True);
+    htQuarry: A.HouseAllow(States.HouseOwner(aHouse), RNST_GetHouseType(htWoodcutters), True);
+  end;
+end;
