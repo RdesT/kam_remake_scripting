@@ -2,22 +2,290 @@
 {$DEFINE BuildHelper35Default}
 
 {$IFNDEF BuildHelperCore}
-{$INCLUDE BuildHelperCore.script}
+  {$INCLUDE BuildHelperCore.script}
 {$ENDIF}
 
+{$IFNDEF BuildHelperDefault}
+  {$INCLUDE BuildHelperDefault.script}
+{$ENDIF}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
-//PLANNED BUILDINGS FUNCTIONS.
+//ADDING PLANNED BUILDINGS FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
+function BH_Default35_AddInns(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htInn)) then
+  begin
+    exit;
+  end;
+
+  case buildings.Inn of
+    0:
+      begin
+        if (planning) then
+        begin
+          if (S.GameTime > (14*BH_Minutes + 30*BH_Seconds)) then
+          begin
+            result := BH_AddBuildingInfo(result, htInn);
+          end;
+
+        end else
+        begin
+          if (S.GameTime > (15*BH_Minutes + 30*BH_Seconds)) then
+          begin
+            result := BH_AddBuildingInfo(result, htInn);
+          end;
+        end;
+      end;
+    1:
+      if ((buildings.Bakery > 1) or (buildings.Butchers > 1)) then
+      begin
+        result := BH_AddBuildingInfo(result, htInn);
+      end;
+  end;
+end;
+
+function BH_Default35_AddSchools(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htSchool)) then
+  begin
+    exit;
+  end;
+
+  case buildings.School of
+    0:
+      result := BH_AddBuildingInfo(result, htSchool);
+    1:
+      if (planning) then
+      begin
+        //TODO check timings.
+        if (S.GameTime > 27*BH_Minutes) then
+        begin
+          result := BH_AddBuildingInfo(result, htSchool);
+        end;
+      end else
+      begin
+        if (S.GameTime > 28*BH_Minutes) then
+        begin
+          result := BH_AddBuildingInfo(result, htSchool);
+        end;
+      end;
+  end;
+end;
+
+function BH_Default35_AddLowPrioritySchools(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htSchool)) then
+  begin
+    exit;
+  end;
+
+  case buildings.School of
+    2:
+      //TODO. Think about this. Not sure that it's needed fast.
+      if (buildings.Metallurgists > 2) then
+      begin
+        result := BH_AddBuildingInfo(result, htSchool);
+      end;
+  end;
+end;
+
+function BH_Default35_AddTowers(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+  //Start placing towers at 33th minute.
+  result := BH_Default_AddTowers(addedBuildings, buildings, player, maxBuildingsCount, 33, planning);
+end;
+
+function BH_Default35_AddFishers(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htFishermans)) then
+  begin
+    exit;
+  end;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0)) then
+  begin
+    result := BH_AddBuildingInfo(result, htFishermans);
+  end;
+end;
+
+function BH_Default35_AddGoldMines(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if (player.PossibleGoldMinesCount = 0) then
+  begin
+    exit;
+  end;
+
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htGoldMine)) then
+  begin
+    if (planning) then
+    begin
+      if (buildings.Sawmill > 0) then
+      begin
+        result := BH_AddBuildingInfo(result, htGoldMine);
+      end;
+    end;
+
+    exit;
+  end;
+
+  case buildings.GoldMine of
+    0:
+      if (buildings.Sawmill > 0) then
+      begin
+        result := BH_AddBuildingInfo(result, htGoldMine);
+      end;
+    1:
+      if ((buildings.Inn > 0) and (buildings.Sawmill > 1) and (buildings.Farm > 1)) then
+      begin
+        result := BH_AddBuildingInfo(result, htGoldMine);
+      end;
+    2:
+      if (buildings.ArmorWorkshop > 3) then
+      begin
+        result := BH_AddBuildingInfo(result, htGoldMine);
+      end;
+  end;
+end;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //SLOW ORDER PLANNED BUILDINGS FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //ADVICES FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+//PLANNED BUILDINGS FUNCTIONS.
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+
+function BH_Default35_Slow_GetPlannedHouses(player: BH_Player; buildings: BH_BuildingsCountInfo; planning: boolean): array of BH_BuildingInfo;
+var
+  maxBuildingsCount: integer;
+
+begin
+  maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
+
+  //result := BH_Default60_Slow_AddInns(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_Slow_AddFishers(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_Slow_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_Slow_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_Slow_AddFarms(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddArmorWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddWeaponWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddTanneries(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddStables(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
+
+  //For slow build orders we want to make all quarries right at start.
+  //result := BH_Default60_Slow_AddQuarries(result, buildings, player, 99, planning);
+
+end;
+
+function BH_Default35_GetPlannedHouses(player: BH_Player; buildings: BH_BuildingsCountInfo; planning: boolean): array of BH_BuildingInfo;
+var
+  maxBuildingsCount: integer;
+
+begin
+
+  if (player.IsSlowBuildOrder) then
+  begin
+    result := BH_Default35_Slow_GetPlannedHouses(player, buildings, planning);
+    exit;
+  end;
+
+  maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
+
+  result := BH_Default35_AddInns(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddSchools(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddTowers(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddButchers(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddFishers(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddFarms(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddArmorWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddWeaponWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddTanneries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddStables(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddMills(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default35_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
+
+end;
 
 {$ENDIF}

@@ -2,8 +2,8 @@
 {$INCLUDE BuildHelperStrategy.script}
 {$INCLUDE BuildHelper60Default.script}
 {$INCLUDE BuildHelper60IronStoring.script}
-{$INCLUDE BuildHelper60LeatherOnly.script}
-{$INCLUDE BuildHelper35Default.script}
+//{$INCLUDE BuildHelper60LeatherOnly.script}
+//{$INCLUDE BuildHelper35Default.script}
 
 {$EVENT evtTick:BH_OnTick}
 {$EVENT evtMissionStart:BH_OnMissionStart}

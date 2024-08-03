@@ -11,6 +11,10 @@
   {$ENDIF}
 {$ENDIF}
 
+{$IFNDEF BuildHelperDefault}
+  {$INCLUDE BuildHelperDefault.script}
+{$ENDIF}
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //ADDING PLANNED BUILDINGS FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -112,69 +116,6 @@ begin
       begin
         result := BH_AddBuildingInfo(result, htSchool);
       end;
-  end;
-end;
-
-function BH_Default60_AddQuarries(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
-var
-  buildersCount: integer;
-
-begin
-
-  result := addedBuildings;
-
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
-  begin
-    exit;
-  end;
-
-  if (not S.PlayerHouseTypeCanBuild(player.Id, htQuarry)) then
-  begin
-    if (planning) then
-    begin
-      result := BH_AddBuildingInfo(result, htQuarry);
-    end;
-
-    exit;
-  end;
-
-  if (buildings.School > 1) then
-  begin
-    exit;
-  end;
-
-  case buildings.Quarry of
-    0:
-      begin
-        result := BH_AddBuildingInfo(result, htQuarry);
-        if (buildings.Woodcutters > 0) then
-        begin
-          result := BH_AddBuildingInfo(result, htQuarry);
-        end;
-      end;
-    1:
-      begin
-        result := BH_AddBuildingInfo(result, htQuarry);
-        result := BH_AddBuildingInfo(result, htQuarry);
-
-        if (Length(result) < BH_GetMaxPlayerPlannedBuildings(player, planning)) then
-        begin
-          result := BH_AddBuildingInfo(result, htQuarry);
-        end;
-      end;
-    2,3,4:
-      result := BH_AddMultipleBuildingInfo(result, htQuarry, 5 - buildings.Quarry, maxBuildingsCount);
-    else
-      begin
-
-        buildersCount := S.StatUnitTypeCountEx(player.Id, utBuilder);
-        // 1 quarry for 5 builders. TODO. Think about it.
-        if (buildings.Quarry < (buildersCount div 5 + U.IfThenI(buildersCount mod 5 = 0, 0, 1))) then
-        begin
-          result := BH_AddBuildingInfo(result, htQuarry);
-        end;
-      end;
-
   end;
 end;
 
@@ -874,22 +815,6 @@ begin
   end;
 end;
 
-function BH_Default60_AddBakeries(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
-begin
-
-  result := addedBuildings;
-
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
-  begin
-    exit;
-  end;
-
-  if ((buildings.Bakery = 0) and (buildings.Mill > 0)) then
-  begin
-    result := BH_AddBuildingInfo(result, htBakery);
-  end;
-end;
-
 function BH_Default60_AddTanneries(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
 begin
 
@@ -1026,12 +951,12 @@ begin
 
   result := addedBuildings;
 
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htFishermans)) then
   begin
     exit;
   end;
 
-  if (Length(result) >= maxBuildingsCount) then
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
   begin
     exit;
   end;
@@ -1228,7 +1153,6 @@ begin
 
   case buildings.Butchers of
     0:
-
       begin
         if (planning) then
         begin
@@ -1295,37 +1219,8 @@ end;
 
 function BH_Default60_AddTowers(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
 begin
-
-  result := addedBuildings;
-
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
-  begin
-    exit;
-  end;
-
-  if (not S.PlayerHouseTypeCanBuild(player.Id, htWatchTower)) then
-  begin
-    exit;
-  end;
-
-  case buildings.WatchTower of
-    0,1,2:
-      begin
-        if (planning and (S.GameTime > 56*BH_Minutes) and (S.GameTime < 57*BH_Minutes)) then
-        begin
-          result := BH_AddMultipleBuildingInfo(result, htWatchTower, 3 - buildings.WatchTower, maxBuildingsCount);
-          exit;
-        end;
-        if (S.GameTime > 57*BH_Minutes) then
-        begin
-          result := BH_AddMultipleBuildingInfo(result, htWatchTower, 3 - buildings.WatchTower, maxBuildingsCount);
-        end;
-      end;
-    3,4:
-      result := BH_AddMultipleBuildingInfo(result, htWatchTower, 5 - buildings.WatchTower, maxBuildingsCount);
-    5,6:
-      result := BH_AddMultipleBuildingInfo(result, htWatchTower, 7 - buildings.WatchTower, maxBuildingsCount);
-  end;
+  //Start placing towers at 57th minute.
+  result := BH_Default_AddTowers(addedBuildings, buildings, player, maxBuildingsCount, 57, planning);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1360,53 +1255,6 @@ begin
       begin
         result := BH_AddBuildingInfo(result, htInn);
       end;
-  end;
-end;
-
-function BH_Default60_Slow_AddQuarries(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
-var
-  buildersCount: integer;
-
-begin
-
-  result := addedBuildings;
-
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
-  begin
-    exit;
-  end;
-
-  if (buildings.School > 1) then
-  begin
-    exit;
-  end;
-
-  if (not S.PlayerHouseTypeCanBuild(player.Id, htQuarry)) then
-  begin
-    if (planning and (buildings.School > 0)) then
-    begin
-      result := BH_AddMultipleBuildingInfo(result, htQuarry, 4, maxBuildingsCount);
-    end;
-
-    exit;
-  end;
-
-  case buildings.Quarry of
-    0:
-      result := BH_AddMultipleBuildingInfo(result, htQuarry, 4, maxBuildingsCount);
-    1,2,3,4:
-      result := BH_AddMultipleBuildingInfo(result, htQuarry, 5 - buildings.Quarry, maxBuildingsCount);
-    else
-      begin
-
-        buildersCount := S.StatUnitTypeCount(player.Id, utBuilder);
-        // 1 quarry for 5 builders. TODO. Think about it.
-        if (buildings.Quarry < (buildersCount div 5 + U.IfThenI(buildersCount mod 5 = 0, 0, 1))) then
-        begin
-          result := BH_AddBuildingInfo(result, htQuarry);
-        end;
-      end;
-
   end;
 end;
 
@@ -1813,7 +1661,7 @@ begin
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_Slow_AddFishers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_Slow_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
@@ -1836,7 +1684,7 @@ begin
   result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
   //For slow build orders we want to make all quarries right at start.
-  result := BH_Default60_Slow_AddQuarries(result, buildings, player, 99, planning);
+  result := BH_Default_Slow_AddQuarries(result, buildings, player, 99, planning);
 
 end;
 
@@ -1858,7 +1706,7 @@ begin
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddFishers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
@@ -1879,7 +1727,7 @@ begin
   result := BH_Default60_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddStables(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
 
 end;

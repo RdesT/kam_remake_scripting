@@ -446,12 +446,12 @@ begin
 
   result := addedBuildings;
 
-  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  if (not S.PlayerHouseTypeCanBuild(player.Id, htFishermans)) then
   begin
     exit;
   end;
 
-  if (Length(result) >= maxBuildingsCount) then
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
   begin
     exit;
   end;
@@ -840,7 +840,7 @@ begin
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_Slow_AddFishers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_Slow_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
@@ -863,7 +863,7 @@ begin
   result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
   //For slow build orders we want to make all quarries right at start.
-  result := BH_Default60_Slow_AddQuarries(result, buildings, player, 99, planning);
+  result := BH_Default_Slow_AddQuarries(result, buildings, player, 99, planning);
 
 end;
 
@@ -885,7 +885,7 @@ begin
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddFishers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
@@ -906,7 +906,7 @@ begin
   result := BH_IronStoring60_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddStables(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddMills(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
 
 end;
