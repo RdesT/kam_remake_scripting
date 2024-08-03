@@ -18,7 +18,7 @@ namespace BuildingHelperFilesCreator.Services
 		private const string ScriptResoursePath = "BuildingHelperFilesCreator.Scripts.";
 		private const string LocalizationsResoursePath = "BuildingHelperFilesCreator.Localizations.";
 		private const string DefaultLocalizationFileName = "BuildHelper";
-		private const string StrategyFileName = "BuildingStrategy.Script";
+		private const string StrategyFileName = "BuildHelperStrategy.script";
 		private const string MapInfoFileExtention = ".dat";
 		private const string PlayersCountParameter = "!SET_MAX_PLAYER";
 
@@ -46,7 +46,7 @@ namespace BuildingHelperFilesCreator.Services
 					using (var stream = assembly.GetManifestResourceStream(resourceName))
 					{
 						var fileName = Path.Combine(folderName, mapName + resourceName.Substring(LocalizationsResoursePath.Length + DefaultLocalizationFileName.Length));
-						CreateFile(stream, mapName + resourceName.Substring(LocalizationsResoursePath.Length + DefaultLocalizationFileName.Length));
+						CreateFile(stream, fileName);
 					}
 				}
 			}
@@ -103,7 +103,9 @@ namespace BuildingHelperFilesCreator.Services
 
 			using (StreamWriter writer = new StreamWriter(filePath))
 			{
-				writer.WriteLine("{$INCLUDE BuildHelperCore.script}");
+				writer.WriteLine("{$IFNDEF BuildHelperCore}");
+				writer.WriteLine("	{$INCLUDE BuildHelperCore.script}");
+				writer.WriteLine("{$ENDIF}");
 				writer.WriteLine();
 				writer.WriteLine("procedure BH_InitStrategy();");
 				writer.WriteLine("begin");

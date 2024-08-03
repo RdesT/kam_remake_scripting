@@ -136,6 +136,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ru.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\..\Scripts\BuildHelper\BuildHelperDefault.script">
+      <Link>Scripts\BuildHelperDefault.script</Link>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
