@@ -48,6 +48,9 @@
 //Is cinematics needed.
 //RNST_CinematicDisabled : boolean;
 
+//Is allowed to place storehouse at coal.
+//RNST_IsAllowedToPlaceAtCoal : boolean;
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //USING EXAMPLE.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -167,8 +170,6 @@ var
   RNST_CinematicLength : integer;
   //Is cinematics needed.
   RNST_CinematicDisabled : boolean;
-  //Is removing initial fog of war needed.
-  RNST_RemoveInitialFogDisabled : boolean;
 
 function RNST_FindBoundPlayer(playerId: integer): integer;
 var
@@ -487,6 +488,19 @@ begin
   end;
 end;
 
+procedure ShareFog(playerId, x, y: integer);
+var
+  i: integer;
+begin
+  for i:= 0 to High(RNST_Players) do
+  begin
+    if ((i <> playerId) and S.PlayerEnabled(i) and (S.PlayerAllianceCheck(i, playerId))) then
+    begin
+      A.FogRevealCircle(i, x, y, RNST_GetPlayerSightRadius(RNST_Players[playerId]));
+    end;
+  end;
+end;
+
 //TODO Remove when A.HouseUnlockEx will apear.
 function RNST_GetHouseType(houseType : TKMHouseType):integer;
 begin
@@ -655,15 +669,6 @@ begin
       end;
 
       RNST_UnlockBuildingTypes(player);
-
-      if (not RNST_RemoveInitialFogDisabled) then
-      begin
-        A.FogCoverAll(player.Id);
-      end;
-
-      //Reveal huge area for vision.
-	    A.FogRevealCircle(player.Id,x,y, RNST_GetPlayerSightRadius(player));
-
       RNST_AddCitizens(player, x, y);
     end;
   end;
@@ -915,6 +920,9 @@ end;
 procedure RNST_OnMissionStart;
 var
   i: integer;
+  storeHouseId: integer;
+  x: integer;
+  y: integer;
 begin
 
   for i:= 0 to Length(RNST_Players) -1 do
@@ -925,22 +933,25 @@ begin
     end;
   end;
 
-  //for i:= 0 to High(Players) do
-  //begin
-  //  if (S.PlayerEnabled(i)) then
-  //  begin
-  //    A.FogCoverAll(i);
-  //  end;
-  //end;
+  for i:= 0 to High(RNST_Players) do
+  begin
+    if (S.PlayerEnabled(i)) then
+    begin
+      A.FogCoverAll(i);
+    end;
+  end;
 
-  //for i:= 0 to High(Players) do
-  //begin
-  //  if (S.PlayerEnabled(i)) then
-  //  begin
-  //    A.FogRevealCircle(i,RNST_Players[i].X,Players[i].Y,Players[i].SightRadius);
-  //    ShareFog(i);
-  //  end;
-  //end;
+  for i:= 0 to High(RNST_Players) do
+  begin
+    if (S.PlayerEnabled(i)) then
+    begin
+      storeHouseId := RNST_FindPlayerStoreHouseId(RNST_Players[i].Id);
+      x := S.HousePositionX(storeHouseId);
+      y := S.HousePositionY(storeHouseId);
+      A.FogRevealCircle(i, x, y,RNST_GetPlayerSightRadius(RNST_Players[i]));
+      ShareFog(i, x, y);
+    end;
+  end;
 
 end;
 
