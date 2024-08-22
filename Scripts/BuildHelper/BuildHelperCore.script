@@ -12,7 +12,6 @@
 {$EVENT evtRoadBuilt:BH_OnRoadBuiltCore}
 
 
-
 type
 	BH_FoodAmountEnum = (FA_VERY_LOW, FA_LOW, FA_OK, FA_HIGH, FA_VERY_HIGH);
 
@@ -128,6 +127,7 @@ record
 
   CloseIronMinesLocations: array of TKMPoint;
   CloseGoldMinesLocations: array of TKMPoint;
+  CloseFishLocations: array of TKMPoint;
 end;
 
 const BH_Seconds = 10;
@@ -487,7 +487,6 @@ begin
   SetLength(result, count - 1);
 
 end;
-
 
 //Iron and gold mines.
 
@@ -946,9 +945,18 @@ begin
 
 end;
 
+//Fish
+
+function BH_IsPossibleToMakeFishermans(player: BH_Player):boolean;
+begin
+  result := true;
+end;
+
 //Roads.
 
 procedure BH_InitMapTile(x, y: integer);
+var
+  unitId: integer;
 begin
 
   if (S.IsRoadAt(-1,x,y)) then
@@ -956,6 +964,13 @@ begin
 
     BH_MapTilesInfo[x][y].RoadTileType := RTT_Road;
     BH_MapTilesInfo[x][y].RoadConnectionType := RCT_Strong;
+  end;
+
+  unitId := S.UnitAt(x,y);
+
+  if ((unitId <> -1) and (S.UnitTypeEx(unitId) = utFish)) then
+  begin
+
   end;
 
 end;
@@ -1107,7 +1122,7 @@ var
   tileType: integer;
   ironTilesInRow: integer;
   goldTilesInRow: integer;
-
+  //fishTiles: array of integer;
 begin
 
   SetLength(BH_MapTilesInfo, S.MapWidth + 1);

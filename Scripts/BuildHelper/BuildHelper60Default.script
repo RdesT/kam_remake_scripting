@@ -1,6 +1,6 @@
-//{$IFNDEF DEBUG}
-//  {$DEFINE DEBUG}
-//{$ENDIF}
+{$IFNDEF DEBUG}
+  {$DEFINE DEBUG}
+{$ENDIF}
 
 {$IFNDEF BuildHelper60Default}
 {$DEFINE BuildHelper60Default}

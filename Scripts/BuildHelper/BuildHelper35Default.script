@@ -189,6 +189,27 @@ begin
   end;
 end;
 
+function BH_Default35_AddBarracks(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
+begin
+
+  result := addedBuildings;
+
+  if (BH_GetAllBuildingsCount(result) >= maxBuildingsCount) then
+  begin
+    exit;
+  end;
+
+  if (buildings.Barracks = 0)then
+  begin
+
+    if ((buildings.ArmorSmithy + buildings.WeaponSmithy + buildings.ArmorWorkshop + buildings.WeaponWorkshop) > 1) then
+    begin
+      result := BH_AddBuildingInfo(result, htBarracks);
+    end;
+
+  end;
+end;
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //SLOW ORDER PLANNED BUILDINGS FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -241,7 +262,6 @@ begin
 
   //For slow build orders we want to make all quarries right at start.
   //result := BH_Default60_Slow_AddQuarries(result, buildings, player, 99, planning);
-
 end;
 
 function BH_Default35_GetPlannedHouses(player: BH_Player; buildings: BH_BuildingsCountInfo; planning: boolean): array of BH_BuildingInfo;
@@ -265,26 +285,26 @@ begin
   result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default35_AddFishers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default35_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddFarms(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddArmorWorkshops(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddWeaponWorkshops(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddTanneries(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddStables(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddMills(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default35_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddFarms(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddArmorWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddWeaponWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddTanneries(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddStables(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddMills(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+  //result := BH_Default35_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
 
 end;
 
