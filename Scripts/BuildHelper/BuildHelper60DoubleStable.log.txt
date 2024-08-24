@@ -1,8 +1,0 @@
-2024.07.23 22:34:32.561   Script preprocessing errors:
-Define not closed
-2024.07.23 22:50:09.385   Script compile errors: 
-[Error] Duplicate identifier 'BH_DEFAULT60_ADDADDITIONALWOODCUTTERS' in '..\..\..\..\Git\kam_remake_scripting\Scripts\BuildHelper\BuildHelper60DoubleStable.script' at [23:10]
-2024.07.23 22:53:52.258   Script compile errors: 
-[Error] Duplicate identifier 'BH_DEFAULT60_ADDSAWMILLS' in '..\..\..\..\Git\kam_remake_scripting\Scripts\BuildHelper\BuildHelper60DoubleStable.script' at [66:10]
-2024.07.23 23:07:11.775   Script compile errors: 
-[Error] Duplicate identifier 'BH_DEFAULT60_ADDSAWMILLS' in '..\..\..\..\Git\kam_remake_scripting\Scripts\BuildHelper\BuildHelper60DoubleStable.script' at [23:10]

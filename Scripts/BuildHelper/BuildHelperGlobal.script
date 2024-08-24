@@ -1,0 +1,166 @@
+{$IFNDEF BuildHelperGlobal}
+{$DEFINE BuildHelperGlobal}
+
+type
+	BH_FoodAmountEnum = (FA_VERY_LOW, FA_LOW, FA_OK, FA_HIGH, FA_VERY_HIGH);
+
+type
+  BH_BuildingStrategy = (BS_Null, BS_Default_60, BS_IronStoring_60, BS_LeatherOnly_60, BS_IronOnly_60, BS_IronRush_60, BS_DoubleStable_60, BS_IronAndGold_60, BS_Gold60, BS_Default35);
+
+type
+  BH_RoadTileType = (RTT_Null, RTT_Road, RTT_RoadPlan);
+
+type
+  BH_RoadConnectionType = (RCT_Null, RCT_Weak, RCT_Strong);
+
+type
+  BH_Color = (Color_White, Color_Green, Color_Yellow, Color_Red, Color_Blue);
+
+type BH_MapTileInfo =
+record
+  //PlayerId: integer;
+  RoadTileType: BH_RoadTileType;
+  RoadConnectionType: BH_RoadConnectionType;
+  LastUsedPointHash: integer;
+end;
+
+type BH_BuildingCollection =
+record
+  BuildingType: TKMHouseType;
+  Ids: TIntegerArray;
+end;
+
+type BH_BuildingPlanCollection =
+record
+  BuildingType: TKMHouseType;
+  Locations: array of TKMPoint;
+end;
+
+type BH_BuildingsCountInfo =
+record
+  School: integer;
+  Inn: integer;
+  Quarry: integer;
+  Woodcutters: integer;
+  Sawmill: integer;
+  Farm: integer;
+  Mill: integer;
+  Bakery: integer;
+  Swine: integer;
+  Butchers: integer;
+  Vineyard: integer;
+  Goldmine: integer;
+  Coalmine: integer;
+  Metallurgists: integer;
+  Weaponworkshop: integer;
+  Tannery: integer;
+  Armorworkshop: integer;
+  Stables: integer;
+  Ironmine: integer;
+  Ironsmithy: integer;
+  Weaponsmithy: integer;
+  Armorsmithy: integer;
+  Barracks: integer;
+  Store: integer;
+  WatchTower: integer;
+  Fishermans: integer;
+  Market: integer;
+  TownHall: integer;
+end;
+
+type BH_CitizensCountInfo =
+record
+  Serf: integer;
+  Woodcutter: integer;
+  Miner: integer;
+  AnimalBreeder: integer;
+  Farmer: integer;
+  Carpenter: integer;
+  Baker: integer;
+  Butcher: integer;
+  Fisher: integer;
+  Builder: integer;
+  Stonemason: integer;
+  Smith: integer;
+  Metallurgist: integer;
+  Recruit: integer;
+end;
+
+type BH_BuildingInfo =
+record
+  BuildingType: TKMHouseType;
+  Count: integer;
+end;
+
+type BH_Advice =
+record
+  Id: string;
+  ShowTime: integer;
+  OneTimeAdvice: boolean;
+  Color: BH_Color;
+end;
+
+type BH_Player =
+record
+  Id: integer;
+  Advices: array of BH_Advice;
+  Buildings: array of BH_BuildingCollection;
+  BuildingPlans: array of BH_BuildingPlanCollection;
+  IsSlowBuildOrder: boolean;
+  StartingFoodAmount: BH_FoodAmountEnum;
+  BuildingStrategy: BH_BuildingStrategy;
+  FirstFarmTime: integer;
+
+  PossibleIronMinesCount: integer;
+  PossibleGoldMinesCount: integer;
+
+  CloseIronMinesLocations: array of TKMPoint;
+  CloseGoldMinesLocations: array of TKMPoint;
+  CloseFishLocations: array of TKMPoint;
+end;
+
+const BH_Seconds = 10;
+const BH_Minutes = 600;
+
+const BH_Wine = 0.3;
+const BH_Bread = 0.4;
+const BH_Fish = 0.5;
+const BH_Sausage = 0.6;
+
+const BH_MinesDistance = 21;
+
+var
+
+  BH_Players: array of BH_Player;
+
+  BH_MapTilesInfo: array of array of BH_MapTileInfo;
+
+  BH_IronMinesLocations: array of TKMPoint;
+  BH_GoldMinesLocations: array of TKMPoint;
+
+  BH_IronMinesConflicts: array of array of TKMPoint;
+  BH_GoldMinesConflicts: array of array of TKMPoint;
+
+  BH_GlobalBuildingStrategy: BH_BuildingStrategy;
+
+  BH_NeedToUpdate: boolean;
+  BH_MinesUpdateIndex: integer;
+
+
+function BH_FindPlayerIndex(playerId: integer): integer;
+var
+  i: integer;
+begin
+
+  result := -1;
+  for i:= 0 to High(BH_Players) do
+  begin
+    if (BH_Players[i].Id = playerId) then
+    begin
+      result:= i;
+      exit;
+    end;
+  end;
+end;
+
+{$ENDIF}

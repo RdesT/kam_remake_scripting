@@ -1,6 +1,6 @@
-//{$IFNDEF DEBUG}
-//  {$DEFINE DEBUG}
-//{$ENDIF}
+{$IFNDEF DEBUG}
+  {$DEFINE DEBUG}
+{$ENDIF}
 
 {$IFNDEF BuildHelper60IronStoring}
 {$DEFINE BuildHelper60IronStoring}
