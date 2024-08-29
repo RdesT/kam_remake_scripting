@@ -15,7 +15,7 @@ procedure BH_InitStrategy();
 begin
 
   //Setting global strategy for all players.
-  BH_GlobalBuildingStrategy := BS_Default_35;
+  BH_GlobalBuildingStrategy := BS_Default35;
 
   //Setting custom strategy for 1 player.
   //BH_AddPlayerStrategy(0, BS_Default_60);
