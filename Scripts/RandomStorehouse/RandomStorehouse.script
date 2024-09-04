@@ -99,6 +99,9 @@
   //Disable starting cinematics.
   //RNST_CinematicDisabled := true;
 
+  //Disable killing starting units. You need at least 1 unit to define player. And this starting unit will be removed if you will not turn off this flag.
+  //RNST_KillingUnitsDisabled := true;
+
 //end;
 
 
@@ -170,6 +173,8 @@ var
   RNST_CinematicLength : integer;
   //Is cinematics needed.
   RNST_CinematicDisabled : boolean;
+  //Should starting units be killed.
+  RNST_KillingUnitsDisabled: boolean;
 
 function RNST_FindBoundPlayer(playerId: integer): integer;
 var
@@ -923,13 +928,25 @@ var
   storeHouseId: integer;
   x: integer;
   y: integer;
+  groupsIds: array of integer;
 begin
 
-  for i:= 0 to Length(RNST_Players) -1 do
+  for i:= 0 to High(RNST_Players) do
   begin
     if (S.PlayerEnabled(i)) then
     begin
+
+      groupsIds := S.PlayerGetAllGroups(RNST_Players[i].Id);
+
       RNST_PlaceRandomStorehouse(RNST_Players[i]);
+
+      if (not RNST_KillingUnitsDisabled) then
+      begin
+        for i:=0 to High(groupsIds) do
+        begin
+          A.GroupKillAll(groupsIds[i], true);
+        end;
+      end;
     end;
   end;
 
@@ -952,7 +969,6 @@ begin
       ShareFog(i, x, y);
     end;
   end;
-
 end;
 
 procedure RNST_OnTick;
