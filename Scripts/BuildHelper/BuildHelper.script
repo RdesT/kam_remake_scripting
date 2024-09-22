@@ -285,7 +285,7 @@ begin
 
   overlay := overlay + BH_GetColor(Color_White) + '<$4>: |'
   overlay := overlay + BH_GetAdvices(playerIndex, buildings, buildingHouses, plannedHouses) + '|';
-  //overlay := overlay + BH_GetDebugOverlayString(playerIndex);
+  overlay := overlay + BH_GetDebugOverlayString(playerIndex);
 
   A.OverlayTextSet(BH_Players[playerIndex].Id, overlay);
 end;

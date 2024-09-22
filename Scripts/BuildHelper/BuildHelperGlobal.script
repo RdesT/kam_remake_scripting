@@ -16,12 +16,22 @@ type
 type
   BH_Color = (Color_White, Color_Green, Color_Yellow, Color_Red, Color_Blue);
 
+type BH_Water =
+record
+  Id: integer;
+  Borders: array of TKMPoint;
+  Fish: TIntegerArray;
+  Fishermans: TIntegerArray;
+end;
+
 type BH_MapTileInfo =
 record
   //PlayerId: integer;
   RoadTileType: BH_RoadTileType;
   RoadConnectionType: BH_RoadConnectionType;
   LastUsedPointHash: integer;
+  PathSearchHash: single;
+  WaterIndex: integer;
 end;
 
 type BH_BuildingCollection =
@@ -113,10 +123,11 @@ record
 
   PossibleIronMinesCount: integer;
   PossibleGoldMinesCount: integer;
+  PossibleFishermansCount: integer;
 
   CloseIronMinesLocations: array of TKMPoint;
   CloseGoldMinesLocations: array of TKMPoint;
-  CloseFishLocations: array of TKMPoint;
+  CloseFishWaterIds: TIntegerArray;
 end;
 
 const BH_Seconds = 10;
@@ -127,7 +138,8 @@ const BH_Bread = 0.4;
 const BH_Fish = 0.5;
 const BH_Sausage = 0.6;
 
-const BH_MinesDistance = 21;
+const BH_MinesDistance = 17;
+const BH_FishDistance = 13;
 
 var
 
@@ -141,11 +153,35 @@ var
   BH_IronMinesConflicts: array of array of TKMPoint;
   BH_GoldMinesConflicts: array of array of TKMPoint;
 
+  BH_FishWater: array of BH_Water;
+
   BH_GlobalBuildingStrategy: BH_BuildingStrategy;
 
   BH_NeedToUpdate: boolean;
   BH_MinesUpdateIndex: integer;
 
+
+  //----------------------------------------------------------------------------------------------------------------------------------------------------
+//ARRAYS RELATED FUNCTIONS.
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+
+function BH_FindTIntegerArrayElementIndex(arr: TIntegerArray; element: integer): integer;
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(arr) do
+  begin
+    if (arr[i] = element) then
+    begin
+      result := i;
+      exit;
+    end;
+
+  end;
+
+  result := -1;
+end;
 
 function BH_FindPlayerIndex(playerId: integer): integer;
 var
@@ -159,6 +195,27 @@ begin
     begin
       result:= i;
       exit;
+    end;
+  end;
+end;
+
+function BH_UniteTIntegerArrays(first, second: TIntegerArray): TIntegerArray;
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(first) do
+  begin
+    setLength(result, Length(result) +1);
+    result[High(Result)] := first[i];
+  end;
+
+  for i:= 0 to High(second) do
+  begin
+    if (not U.ArrayHasElementI(second[i], result)) then
+    begin
+      setLength(result, Length(result) +1);
+      result[High(Result)] := second[i];
     end;
   end;
 end;

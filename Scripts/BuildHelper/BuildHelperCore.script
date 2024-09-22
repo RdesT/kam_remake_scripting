@@ -9,27 +9,15 @@
 {$EVENT evtHouseDestroyed:BH_OnHouseDestroyedCore}
 {$EVENT evtMissionStart:BH_OnMissionStartCore}
 
-//----------------------------------------------------------------------------------------------------------------------------------------------------
-//ARRAYS RELATED FUNCTIONS.
-//----------------------------------------------------------------------------------------------------------------------------------------------------
+{$COMMAND DebugFlag:BH_SwitchDebugFlag}
 
-function BH_FindElementIndex(arr: TIntegerArray; element: integer): integer;
 var
-  i: integer;
-begin
+  BH_DebugBuildingsFlag: boolean;
+  BH_DebugMinesFlag: boolean;
+  BH_DebugBuildingsPlansFlag: boolean;
+  BH_DebugWaterFlag: boolean;
+  BH_DebugFishFlag: boolean;
 
-  for i:= 0 to High(arr) do
-  begin
-    if (arr[i] = element) then
-    begin
-      result := i;
-      exit;
-    end;
-
-  end;
-
-  result := -1;
-end;
 
 //BH_Player
 
@@ -578,7 +566,7 @@ begin
     exit;
   end;
 
-  elementIndex := BH_FindElementIndex(BH_Players[playerIndex].Buildings[buildingIndex].Ids, houseId);
+  elementIndex := BH_FindTIntegerArrayElementIndex(BH_Players[playerIndex].Buildings[buildingIndex].Ids, houseId);
 
   if (elementIndex <> -1) then
   begin
@@ -912,6 +900,17 @@ begin
   end;
 end;
 
+function BH_GetTIntegerArrayCollectionString(arr: TIntegerArray):string;
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(arr) do
+  begin
+    result := result + IntToStr(arr[i]) + ',';
+  end;
+end;
+
 function BH_GetPointsCollectionString(points: array of TKMPoint): string;
 var
   i: integer;
@@ -929,47 +928,70 @@ begin
 end;
 
 function BH_GetDebugOverlayString(playerIndex: integer): string;
-var i: integer;
+var
+  i: integer;
 
 begin
 
-
-  //result := result + 'Buildings collection: |' + BH_GetBuildingsCollectionString(BH_Players[playerIndex].Buildings);
-
-  for i:= 0 to High(BH_Players[playerIndex].BuildingPlans) do
+  if (BH_DebugBuildingsFlag)  then
   begin
-    result := result + 'Player house plans: ' + S.HouseTypeNameEx(BH_Players[playerIndex].BuildingPlans[i].BuildingType) + ' ' + BH_GetPointsCollectionString(BH_Players[playerIndex].BuildingPlans[i].Locations) + '|';
+    result := result + 'Buildings collection: |' + BH_GetBuildingsCollectionString(BH_Players[playerIndex].Buildings);
   end;
 
-
+  if (BH_DebugBuildingsPlansFlag) then
+  begin
+    for i:= 0 to High(BH_Players[playerIndex].BuildingPlans) do
+    begin
+      result := result + 'Player house plans: ' + S.HouseTypeNameEx(BH_Players[playerIndex].BuildingPlans[i].BuildingType) + ' ' + BH_GetPointsCollectionString(BH_Players[playerIndex].BuildingPlans[i].Locations) + '|';
+    end;
+  end;
 
   //Global mines info.
-  {
-  result := result + 'Iron mines: |' + BH_GetPointsCollectionString(BH_IronMinesLocations) + '|';
-  result := result + 'Gold mines: |' + BH_GetPointsCollectionString(BH_GoldMinesLocations) + '|';
 
-  result := result + 'Iron conflicts: |';
-  for i:= 0 to High(BH_IronMinesConflicts) do
+  if (BH_DebugMinesFlag) then
   begin
-    result := result + BH_GetPointsCollectionString(BH_IronMinesConflicts[i])+ '|';
-  end;
+    result := result + 'Iron mines: |' + BH_GetPointsCollectionString(BH_IronMinesLocations) + '|';
+    result := result + 'Gold mines: |' + BH_GetPointsCollectionString(BH_GoldMinesLocations) + '|';
 
-  result := result + 'Gold conflicts: |';
+    result := result + 'Iron conflicts: |';
+    for i:= 0 to High(BH_IronMinesConflicts) do
+    begin
+      result := result + BH_GetPointsCollectionString(BH_IronMinesConflicts[i])+ '|';
+    end;
 
-  for i:= 0 to High(BH_GoldMinesConflicts) do
-  begin
-    result := result + BH_GetPointsCollectionString(BH_GoldMinesConflicts[i])+ '|';
-  end;
-  }
+    result := result + 'Gold conflicts: |';
+
+    for i:= 0 to High(BH_GoldMinesConflicts) do
+    begin
+      result := result + BH_GetPointsCollectionString(BH_GoldMinesConflicts[i]) + '|';
+    end;
+
 
   //Player mines info.
-  {
-  result := result + 'Player iron mines: |' + BH_GetPointsCollectionString(BH_Players[playerIndex].CloseIronMinesLocations) + '|';
-  result := result + IntToStr(BH_Players[playerIndex].PossibleIronMinesCount) + '|';
-  result := result + 'Player gold mines: |' + BH_GetPointsCollectionString(BH_Players[playerIndex].CloseGoldMinesLocations) + '|';
-  result := result + IntToStr(BH_Players[playerIndex].PossibleGoldMinesCount) + '|';
-  }
+    result := result + 'Player iron mines: |' + BH_GetPointsCollectionString(BH_Players[playerIndex].CloseIronMinesLocations) + '|';
+    result := result + IntToStr(BH_Players[playerIndex].PossibleIronMinesCount) + '|';
+    result := result + 'Player gold mines: |' + BH_GetPointsCollectionString(BH_Players[playerIndex].CloseGoldMinesLocations) + '|';
+    result := result + IntToStr(BH_Players[playerIndex].PossibleGoldMinesCount) + '|';
+  end;
 
+  if (BH_DebugFishFlag) then
+  begin
+    result:= result + 'Possible fisharmans ' + IntToStr(BH_Players[playerIndex].PossibleFishermansCount) + '|';
+    result:= result + 'Close water: ';
+    for i:= 0 to High(BH_Players[playerIndex].CloseFishWaterIds) do
+    begin
+      result := result + IntToStr(BH_Players[playerIndex].CloseFishWaterIds[i]) + ' ';
+    end;
+  end;
+
+  if (BH_DebugWaterFlag) then
+  begin
+    for i:= 0 to High(BH_FishWater) do
+    begin
+      result := result + 'WaterId ' + IntToStr(BH_FishWater[i].Id) + ' Fish ' + BH_GetTIntegerArrayCollectionString(BH_FishWater[i].Fish) + ' Fishermans ' + BH_GetTIntegerArrayCollectionString(BH_FishWater[i].Fishermans) +'|';
+      result := result + 'Borders ' + BH_GetPointsCollectionString(BH_FishWater[i].Borders)+ '|';
+    end;
+  end;
 
 end;
 
@@ -986,6 +1008,23 @@ begin
       result := '[$0000FF]';
     Color_Blue:
       result := '[$FF0000]';
+  end;
+end;
+
+procedure BH_SwitchDebugFlag(aHandID: Integer; flagName: string);
+begin
+
+  case flagName of
+    'Buildings' :
+      BH_DebugBuildingsFlag := not BH_DebugBuildingsFlag;
+    'Plans' :
+      BH_DebugBuildingsPlansFlag := not BH_DebugBuildingsPlansFlag;
+    'Mines' :
+      BH_DebugMinesFlag := not BH_DebugMinesFlag;
+    'Water' :
+      BH_DebugWaterFlag := not BH_DebugWaterFlag;
+    'Fish' :
+      BH_DebugFishFlag := not BH_DebugFishFlag;
   end;
 end;
 
@@ -1039,15 +1078,15 @@ begin
   for playerId:= 0 to S.LocationCount - 1 do
   begin
 
-    if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
-    begin
-      continue;
-    end;
-
-    //if (not S.PlayerEnabled(playerId)) then
+    //if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
     //begin
     //  continue;
     //end;
+
+    if (not S.PlayerEnabled(playerId)) then
+    begin
+      continue;
+    end;
 
     index := BH_FindPlayerIndex(playerId);
 
@@ -1106,6 +1145,9 @@ begin
     //TODO move from core.
     BH_Players[index].Advices := BH_AddTips(BH_Players[index].Advices, '<$0>', Color_White, 60, true);
   end;
+
+  //TODO. Move to BuildHelperTerrain. BH_Players is not created at the moment when OnMissionStart in terrain file is invoked.
+  BH_FillStartingFishermans();
 
 end;
 
