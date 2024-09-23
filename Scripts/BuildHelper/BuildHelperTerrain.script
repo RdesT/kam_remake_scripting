@@ -13,6 +13,8 @@
 {$EVENT evtHouseDestroyed:BH_OnHouseDestroyedTerrain}
 {$EVENT evtMissionStart:BH_OnMissionStartTerrain}
 
+{$COMMAND GetRoadInfo:BH_GetRoadInfo}
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //PATH FIND.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -784,6 +786,12 @@ end;
 //ROADS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
+function BH_GetRoadCheckHashValue(x, y: integer): single;
+begin
+  result := x * y;
+  result := result / S.GameTime;
+end;
+
 procedure BH_InitMapTile(x, y: integer);
 var
   unitId: integer;
@@ -797,15 +805,9 @@ begin
   end;
 
   unitId := S.UnitAt(x,y);
-
-  if ((unitId <> -1) and (S.UnitTypeEx(unitId) = utFish)) then
-  begin
-
-  end;
-
 end;
 
-function BH_SaveGetRoadConnectionType(x,y: integer): BH_RoadConnectionType;
+function BH_SafeGetRoadConnectionType(x,y: integer): BH_RoadConnectionType;
 begin
 
   result := RCT_Null;
@@ -836,29 +838,29 @@ end;
 function BH_GetBestNeighborConnection(x,y: integer): BH_RoadConnectionType;
 begin
 
-  result := BH_SaveGetRoadConnectionType(x-1,y);
+  result := BH_SafeGetRoadConnectionType(x-1,y);
 
   if (result = RCT_Strong) then
     exit;
 
-  result := BH_GetBestConnection(result, BH_SaveGetRoadConnectionType(x+1,y));
+  result := BH_GetBestConnection(result, BH_SafeGetRoadConnectionType(x+1,y));
 
   if (result = RCT_Strong) then
     exit;
 
-  result := BH_GetBestConnection(result, BH_SaveGetRoadConnectionType(x,y-1));
+  result := BH_GetBestConnection(result, BH_SafeGetRoadConnectionType(x,y-1));
 
   if (result = RCT_Strong) then
     exit;
 
-  result := BH_GetBestConnection(result, BH_SaveGetRoadConnectionType(x,y+1));
+  result := BH_GetBestConnection(result, BH_SafeGetRoadConnectionType(x,y+1));
 
 end;
 
 procedure BH_ConnectRoads(x,y: integer; connectionType: BH_RoadConnectionType);
 begin
 
-  BH_MapTilesInfo[x][y].LastUsedPointHash := 0;
+  BH_MapTilesInfo[x][y].RoadCheckHash := 0;
 
   if ((not BH_IsMapPoint(x,y)) or (BH_MapTilesInfo[x][y].RoadTileType = RTT_Null)) then
   begin
@@ -890,7 +892,7 @@ begin
   //A.Log('Was Connected : ' + IntToStr(x) + ';' + IntToStr(y) + ' ' + IntToStr(BH_MapTilesInfo[x][y].RoadConnectionType));
 end;
 
-function BH_CheckConnection(hash: integer; x,y: integer): boolean;
+function BH_CheckConnection(hash: single; x,y: integer): boolean;
 begin
 
   result := false;
@@ -906,19 +908,12 @@ begin
     exit;
   end;
 
-  if (BH_MapTilesInfo[x][y].LastUsedPointHash = hash) then
+  if (BH_MapTilesInfo[x][y].RoadCheckHash = hash) then
   begin
     exit;
   end;
 
-  BH_MapTilesInfo[x][y].LastUsedPointHash := hash;
-
-  //Rare case if you are building normaly. But if you make too many roads this will crush game.
-  //if (Length(usedPoints) > 13) then
-  //begin
-  //  result := false;
-  //  exit;
-  //end;
+  BH_MapTilesInfo[x][y].RoadCheckHash := hash;
 
   if (BH_CheckConnection(hash, x  , y-1)) then
   begin
@@ -943,6 +938,15 @@ begin
     result := true;
     exit;
   end;
+end;
+
+procedure BH_GetRoadInfo(aHandID: Integer; x, y: integer);
+begin
+  if (BH_IsMapPoint(x,y)) then
+  begin
+    A.ShowMsg(aHandID, IntToStr(BH_MapTilesInfo[x][y].RoadConnectionType));
+  end;
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1563,22 +1567,22 @@ begin
   BH_MapTilesInfo[x][y].RoadTileType := RTT_Null;
   BH_MapTilesInfo[x][y].RoadConnectionType := RCT_Null;
 
-  if (not BH_CheckConnection(x*y, x  ,y-1)) then
+  if (not BH_CheckConnection(BH_GetRoadCheckHashValue(x,y-1), x  ,y-1)) then
   begin
     BH_ConnectRoads(x,y-1, RCT_Null);
   end;
 
-  if (not BH_CheckConnection(x*y, x  ,y+1)) then
+  if (not BH_CheckConnection(BH_GetRoadCheckHashValue(x,y+1), x  ,y+1)) then
   begin
     BH_ConnectRoads(x,y+1, RCT_Null);
   end;
 
-  if (not BH_CheckConnection(x*y, x-1,y  )) then
+  if (not BH_CheckConnection(BH_GetRoadCheckHashValue(x-1,y), x-1,y  )) then
   begin
     BH_ConnectRoads(x-1,y, RCT_Null);
   end;
 
-  if (not BH_CheckConnection(x*y, x+1,y  )) then
+  if (not BH_CheckConnection(BH_GetRoadCheckHashValue(x+1,y), x+1,y  )) then
   begin
     BH_ConnectRoads(x+1,y, RCT_Null);
   end;

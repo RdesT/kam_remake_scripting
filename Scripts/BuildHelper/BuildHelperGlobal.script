@@ -29,7 +29,7 @@ record
   //PlayerId: integer;
   RoadTileType: BH_RoadTileType;
   RoadConnectionType: BH_RoadConnectionType;
-  LastUsedPointHash: integer;
+  RoadCheckHash: single;
   PathSearchHash: single;
   WaterIndex: integer;
 end;
