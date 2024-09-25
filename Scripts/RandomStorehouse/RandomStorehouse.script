@@ -409,7 +409,7 @@ begin
 
 
       nextUnitType := RNST_GetNextStartingUnitTypeToAdd(player.StartingUnits, S.StatCitizenCount(player.Id));
-      Actions.GiveUnitEx(player.Id, nextUnitType, currentX, currentY, 4);
+      Actions.GiveUnitEx(player.Id, nextUnitType, currentX, currentY, 6);
 
       //We go to 4 dirrections before we increse radius.
       if (dirrectionCounter > 4) then
@@ -925,6 +925,7 @@ end;
 procedure RNST_OnMissionStart;
 var
   i: integer;
+  j: integer;
   storeHouseId: integer;
   x: integer;
   y: integer;
@@ -942,9 +943,9 @@ begin
 
       if (not RNST_KillingUnitsDisabled) then
       begin
-        for i:=0 to High(groupsIds) do
+        for j:=0 to High(groupsIds) do
         begin
-          A.GroupKillAll(groupsIds[i], true);
+          A.GroupKillAll(groupsIds[j], true);
         end;
       end;
     end;
