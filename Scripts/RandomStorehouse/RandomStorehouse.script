@@ -934,7 +934,7 @@ begin
 
   for i:= 0 to High(RNST_Players) do
   begin
-    if (S.PlayerEnabled(i)) then
+    if (S.PlayerEnabled(RNST_Players[i].Id)) then
     begin
 
       groupsIds := S.PlayerGetAllGroups(RNST_Players[i].Id);
@@ -953,7 +953,7 @@ begin
 
   for i:= 0 to High(RNST_Players) do
   begin
-    if (S.PlayerEnabled(i)) then
+    if (S.PlayerEnabled(RNST_Players[i].Id)) then
     begin
       A.FogCoverAll(i);
     end;
@@ -961,7 +961,7 @@ begin
 
   for i:= 0 to High(RNST_Players) do
   begin
-    if (S.PlayerEnabled(i)) then
+    if (S.PlayerEnabled(RNST_Players[i].Id)) then
     begin
       storeHouseId := RNST_FindPlayerStoreHouseId(RNST_Players[i].Id);
       x := S.HousePositionX(storeHouseId);
@@ -997,7 +997,7 @@ begin
 	end;
 
 
-	if States.GameTime = 30 then
+	if States.GameTime = 15 then
 	begin
 
 		for i := 0 to High(RNST_Players) do
