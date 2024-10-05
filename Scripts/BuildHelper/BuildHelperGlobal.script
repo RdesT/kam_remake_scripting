@@ -138,7 +138,7 @@ const BH_Bread = 0.4;
 const BH_Fish = 0.5;
 const BH_Sausage = 0.6;
 
-const BH_MinesDistance = 17;
+const BH_MinesDistance = 22;
 const BH_FishDistance = 13;
 
 var
@@ -161,10 +161,11 @@ var
   BH_MinesUpdateIndex: integer;
 
 
-  //----------------------------------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------------------------------
 //ARRAYS RELATED FUNCTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
+//TODO Move to some helper and use it everywhere.
 function BH_FindTIntegerArrayElementIndex(arr: TIntegerArray; element: integer): integer;
 var
   i: integer;

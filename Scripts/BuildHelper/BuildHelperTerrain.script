@@ -1213,13 +1213,10 @@ var
   ids: array of integer;
 begin
 
-  A.Log(IntToStr(Length(BH_Players)));
   for i:=0 to High(BH_Players) do
   begin
 
     ids:= S.PlayerGetAllHouses(BH_Players[i].Id);
-
-    A.Log(IntToStr(Length(ids)));
 
     for j:=0 to High(ids) do
     begin
