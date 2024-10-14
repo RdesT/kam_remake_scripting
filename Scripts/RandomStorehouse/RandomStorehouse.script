@@ -141,15 +141,10 @@ record
   StartingResourses: array of RNST_WareSetting;
   UnlockedBuildings: TKMHouseTypeSet;
 
+  BoundPlayers: TIntegerArray;
   SlowBuildOrder: boolean;
 
   SightRadius: integer;
-end;
-
-type RNST_Binding =
-record
-  First: integer;
-  Second: integer;
 end;
 
 const
@@ -162,7 +157,6 @@ const
 
 var
   RNST_Players: array of RNST_Player;
-  RNST_Bindings: array of RNST_Binding;
   RNST_WareSettings: array of RNST_WareSetting;
 
   //Is allowed to place randomly storehouse at coal tiles.
@@ -176,26 +170,13 @@ var
   //Should starting units be killed.
   RNST_KillingUnitsDisabled: boolean;
 
-function RNST_FindBoundPlayer(playerId: integer): integer;
-var
-  i: integer;
 
+
+function RNST_AddTIntegerElement(arr: TIntegerArray; element: integer): TIntegerArray;
 begin
-  result := -1;
-
-  for i := 0 to Length(RNST_Bindings) - 1 do
-  begin
-    if (RNST_Bindings[i].First = playerId)then
-    begin
-      result:= RNST_Bindings[i].Second;
-      exit;
-    end;
-    if (RNST_Bindings[i].Second = playerId)then
-    begin
-      result:= RNST_Bindings[i].First;
-      exit;
-    end;
-  end;
+  result := arr;
+  setLength(result, Length(result) + 1);
+  result[High(result)] := element;
 end;
 
 function RNST_FindPlayerIndex(playerId: integer): integer;
@@ -213,6 +194,52 @@ begin
       exit;
     end;
   end;
+end;
+
+function RNST_FindPlayerStoreHouseId(playerId : integer): integer;
+var
+  i: integer;
+  houseIds : array of integer;
+
+begin
+
+  result := -1;
+  houseIds := States.PlayerGetAllHouses(playerId);
+
+  for i:= 0 to Length(houseIds) -1 do
+  begin
+    if (S.HouseTypeEx(houseIds[i]) = htStore) then
+    begin
+      result := houseIds[i];
+      exit;
+    end;
+  end;
+end;
+
+function RNST_FindInitializedBoundPlayer(playerId: integer): integer;
+var
+  i: integer;
+  index : integer;
+
+begin
+  result := -1;
+
+  index := RNST_FindPlayerIndex(playerId);
+
+  if (index = -1) then
+  begin
+    exit;
+  end;
+
+  for i := 0 to High(RNST_Players[index].BoundPlayers) do
+  begin
+
+    if (RNST_FindPlayerStoreHouseId(RNST_Players[index].BoundPlayers[i]) <> -1) then
+    begin
+      result := RNST_Players[index].BoundPlayers[i];
+    end;
+  end;
+
 end;
 
 function RNST_FindUnitSettingIndex(settings: array of RNST_UnitSetting; unitType: TKMUnitType) : integer;
@@ -474,25 +501,6 @@ begin
                 RNST_DefaultSightRadius));
 end;
 
-function RNST_FindPlayerStoreHouseId(playerId : integer): integer;
-var
-  i: integer;
-  houseIds : array of integer;
-
-begin
-
-  houseIds := States.PlayerGetAllHouses(playerId);
-
-  for i:= 0 to Length(houseIds) -1 do
-  begin
-    if (S.HouseTypeEx(houseIds[i]) = htStore) then
-    begin
-      result := houseIds[i];
-      exit;
-    end;
-  end;
-end;
-
 procedure ShareFog(playerId, x, y: integer);
 var
   i: integer;
@@ -636,7 +644,7 @@ begin
 
     x := 0;
     y := 0;
-    boundPlayer := RNST_FindBoundPlayer(player.Id);
+    boundPlayer := RNST_FindInitializedBoundPlayer(player.Id);
     boundPlayerIndex := RNST_FindPlayerIndex(boundPlayer);
     //If there is a bound player and storehouse for this player was placed we place storehouse using this coordinates.
     if (boundPlayerIndex <> -1) then
@@ -646,7 +654,6 @@ begin
 
       if (boundPlayerStoreHouseId > 0)then
       begin
-
 
         x := player.XMIN + (S.HousePositionX(boundPlayerStoreHouseId) - RNST_Players[boundPlayerIndex].XMIN);
         y := player.YMIN + (S.HousePositionY(boundPlayerStoreHouseId) - RNST_Players[boundPlayerIndex].YMIN);
@@ -688,20 +695,25 @@ end;
 //second - second player id.
 procedure RNST_BindPlayers(first, second: integer);
 var
-  count: integer;
-  newBinding: RNST_Binding;
+  firstPlayerIndex: integer;
+  secondPlayerIndex: integer;
 begin
-  //Player can be bound only once.
-  if ((RNST_FindBoundPlayer(first) <> -1) or (RNST_FindBoundPlayer(second) <> -1)) then
+
+  //Look for players. If one of them is not found binding can't be added.
+  firstPlayerIndex := RNST_FindPlayerIndex(first);
+  if (firstPlayerIndex = -1) then
   begin
     exit;
   end;
 
-  count := Length(RNST_Bindings);
-  newBinding.First := first;
-  newBinding.Second := second;
-  setLength(RNST_Bindings, count + 1);
-  RNST_Bindings[count] := newBinding;
+  secondPlayerIndex := RNST_FindPlayerIndex(second);
+  if (secondPlayerIndex = -1) then
+  begin
+    exit;
+  end;
+
+  RNST_Players[firstPlayerIndex].BoundPlayers := RNST_AddTIntegerElement(RNST_Players[firstPlayerIndex].BoundPlayers, second);
+  RNST_Players[secondPlayerIndex].BoundPlayers := RNST_AddTIntegerElement(RNST_Players[secondPlayerIndex].BoundPlayers, first);
 end;
 
 //Sets setting for script to add some units at start after storehouse will be placed. Works only foe citizens!!! Don't add any warriors here.
