@@ -18,26 +18,26 @@ namespace BuildingHelperFilesCreator
 		static void Main()
 		{
 			var args = Environment.GetCommandLineArgs();
-			if (args.Length > 1)
+			Console.WriteLine("Opened");
+			if (args.Length > 1 && args[1] == "-v")
 			{
-				if (args[1] == "-v")
+				using (StreamWriter sw = new StreamWriter(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "version.txt")))
 				{
-					using (StreamWriter sw = new StreamWriter(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "version.txt")))
-					{
-						sw.Write(Assembly.GetEntryAssembly().GetName().Version);
-					};
-
-					return;
-				}
-				else if (args[1] == "-u")
-				{
-					MessageBox.Show("Application was successfully updated to new version.");
-				}
+					sw.Write(Assembly.GetEntryAssembly().GetName().Version);
+				};
+				return;
 			}
 
-			if (AutoUpdateService.CheckUpdates())
+			if (args.Length > 1 && args[1] == "-u")
 			{
-				return;
+				MessageBox.Show("Application was successfully updated to new version.");
+			}
+			else
+			{
+				if (AutoUpdateService.CheckUpdates())
+				{
+					return;
+				}
 			}
 
 			Application.EnableVisualStyles();
