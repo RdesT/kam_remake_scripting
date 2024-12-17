@@ -1,0 +1,35 @@
+{$INCLUDE MapCopyPaste.script}
+
+{$EVENT evtMissionStart:MI_OnMissionStart}
+{$COMMAND SetField:MI_SetBattleField}
+
+procedure MI_InitMap(random: integer);
+begin
+
+  MCP_ClearBuffer();
+  case random of
+    0:
+    begin
+
+    end;
+    1:
+    begin
+
+    end else
+    begin
+      exit;
+    end;
+  end;
+
+  MCP_PasteFromBuffer();
+end;
+
+procedure MI_SetBattleField(aHand: integer; random: integer);
+begin
+  MI_InitMap(random);
+end;
+
+procedure MI_OnMissionStart();
+begin
+  MI_InitMap(States.KamRandomI(2));
+end;
