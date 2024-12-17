@@ -1,0 +1,18 @@
+{$EVENT evtTick:RPT_OnTick}
+{$EVENT evtMissionStart:RPT_OnMissionStart}
+
+var
+  RPT_MaxPeaceTime: integer;
+  RPT_MinPeaceTime: integer;
+  RPT_PeaceTime: integer;
+
+procedure RPT_OnMissionStart;
+begin
+  RPT_PeaceTime:= U.RandomRangeI(RPT_MinPeaceTime,RPT_MaxPeaceTime);
+  A.PeaceTime(S.GameTime * 600);
+end;
+
+procedure RPT_OnTick;
+begin
+  A.OverlayTextSet(-1, U.TimeToString(RPT_PeaceTime * 600 - S.GameTime));
+end;
