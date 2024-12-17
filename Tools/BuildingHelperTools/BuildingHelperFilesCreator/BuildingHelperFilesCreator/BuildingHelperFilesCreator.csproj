@@ -87,6 +87,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ru.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\AutoUpdateService.cs" />
     <Compile Include="Services\BuildHelperFilesService.cs" />
     <Compile Include="Services\LocalizationService.cs" />
     <Compile Include="Services\TempConfigService.cs" />
@@ -139,6 +140,12 @@
     <EmbeddedResource Include="..\..\..\..\Scripts\BuildHelper\BuildHelperDefault.script">
       <Link>Scripts\BuildHelperDefault.script</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\..\Scripts\BuildHelper\BuildHelperGlobal.script">
+      <Link>Scripts\BuildHelperGlobal.script</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\..\..\Scripts\BuildHelper\BuildHelperTerrain.script">
+      <Link>Scripts\BuildHelperTerrain.script</Link>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -154,4 +161,8 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).exe" "$(SolutionDir)Executable\BuildHelper.exe"
+"$(SolutionDir)Executable\BuildHelper.exe" -v</PostBuildEvent>
+  </PropertyGroup>
 </Project>

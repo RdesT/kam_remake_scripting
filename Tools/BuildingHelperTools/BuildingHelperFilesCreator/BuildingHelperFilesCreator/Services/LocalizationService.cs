@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BuildingHelperFilesCreator.Services
 {
-	public class LocalizationService
+	public sealed class LocalizationService
 	{
 		public LocalizationService(string currentLanguage)
 		{

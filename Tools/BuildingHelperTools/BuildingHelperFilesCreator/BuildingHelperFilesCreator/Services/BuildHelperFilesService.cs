@@ -133,7 +133,7 @@ namespace BuildingHelperFilesCreator.Services
 				var includeLine = File.ReadLines(filePath).SkipWhile(line =>
 				{
 					var lowCaseLine = line.ToLower();
-					return !line.Contains("{$INCLUDE BuildHelper.script}".ToLower()) || !line.Contains("{$I BuildHelper.script}".ToLower());
+					return !(lowCaseLine.Contains(@"{$INCLUDE BuildHelper.script}".ToLower()) || lowCaseLine.Contains(@"{$I BuildHelper.script}".ToLower()));
 				}).Take(1);
 
 				if (includeLine != null && !includeLine.Any())
