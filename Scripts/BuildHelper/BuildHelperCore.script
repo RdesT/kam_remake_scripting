@@ -655,11 +655,45 @@ begin
   end;
 end;
 
+//Get house type where this waretype can be created.
+function BH_GetWareTypeHouseType(wareType: TKMWareType): TKMHouseType;
+begin
+  case wareType of
+    wtTrunk: result := htWoodcutters;
+    wtStone: result := htQuarry;
+    wtTimber: result := htSawmill;
+    wtIronOre: result := htIronMine;
+    wtGoldOre: result := htGoldMine;
+    wtCoal: result := htCoalMine;
+    wtIron: result := htIronSmithy;
+    wtGold: result := htMetallurgists;
+    wtWine: result := htVineyard;
+    wtCorn: result := htFarm;
+    wtBread: result := htBakery;
+    wtFlour: result := htMill;
+    wtLeather: result := htTannery;
+    wtSausage: result := htButchers;
+    wtPig: result := htSwine;
+    wtSkin: result := htSwine;
+    wtWoodenShield: result := htArmorWorkshop;
+    wtIronShield: result := htArmorSmithy;
+    wtLeatherArmor: result := htArmorWorkshop;
+    wtIronArmor: result := htArmorSmithy;
+    wtAxe: result := htWeaponWorkshop;
+    wtSword: result := htWeaponSmithy;
+    wtLance: result := htWeaponWorkshop;
+    wtPike: result := htWeaponSmithy;
+    wtBow: result := htWeaponWorkshop;
+    wtCrossbow: result := htWeaponSmithy;
+    wtHorse: result := htStables;
+    wtFish: result := htFishermans;
+  end;
+end;
+
 function BH_GetPlayerPigsCount(playerId: integer): integer;
 var
   i: integer;
   ids: array of integer;
-
 begin
 
   result := 0;
@@ -675,6 +709,36 @@ begin
   for i:= 0 to High(ids) do
   begin
     result := result + S.HouseWareAmount(ids[i], wtPig);
+  end;
+end;
+
+function BH_GetPlayerResourceCount(playerId: integer; wareType: TKMWareType; checkSerfs: boolean): integer;
+var
+  i: integer;
+  ids: array of integer;
+begin
+
+  ids := BH_GetPlayerBuildingTypeIds(playerId, htStore);
+
+  for i:= 0 to High(ids) do
+  begin
+    result := result + S.HouseWareAmount(ids[i], wareType);
+  end;
+
+  ids := BH_GetPlayerBuildingTypeIds(playerId, BH_GetWareTypeHouseType(wareType));
+
+  for i:= 0 to High(ids) do
+  begin
+    result := result + S.HouseWareAmount(ids[i], wareType);
+  end;
+
+  if (checkSerfs) then
+  begin
+    ids := S.PlayerGetAllUnits(playerId);
+
+    for i:= 0 to High(ids) do
+    begin
+    end;
   end;
 end;
 

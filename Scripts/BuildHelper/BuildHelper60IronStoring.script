@@ -836,7 +836,8 @@ begin
 
   maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
 
-  result := BH_Default60_Slow_AddInns(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddFirstInn(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddInns(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
@@ -851,7 +852,7 @@ begin
   result := BH_Default60_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_Slow_AddFarms(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
@@ -881,6 +882,7 @@ begin
 
   maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
 
+  result := BH_Default_AddFirstInn(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddInns(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
@@ -896,7 +898,7 @@ begin
   result := BH_Default60_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddFarms(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default60_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
@@ -906,7 +908,7 @@ begin
   result := BH_IronStoring60_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddStables(result, buildings, player, maxBuildingsCount, planning);
   result := BH_IronStoring60_AddMills(result, buildings, player, maxBuildingsCount, planning);
-  result := BH_Default_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
 
 end;

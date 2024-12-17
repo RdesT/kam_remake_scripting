@@ -403,6 +403,7 @@ begin
 
   maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
 
+  result := BH_Default_AddFirstInn(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddInns(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
   result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
