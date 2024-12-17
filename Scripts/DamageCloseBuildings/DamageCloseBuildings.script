@@ -307,7 +307,7 @@ begin
   if (playerIndex = -1) then
   begin
 
-    iF (DCB_Mode = DCB_CUSTOM_PLAYERS_ONLY) then
+    if (DCB_Mode = DCB_CUSTOM_PLAYERS_ONLY) then
     begin
       exit;
     end;

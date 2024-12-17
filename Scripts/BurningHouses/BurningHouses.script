@@ -185,7 +185,7 @@ begin
     exit;
   end;
 
-  houseDamage:= S.HouseDamage(houseId)
+  houseDamage:= S.HouseDamage(houseId);
   if (houseDamage > 0) then
   begin
     BH_TRACE('Already spread');
