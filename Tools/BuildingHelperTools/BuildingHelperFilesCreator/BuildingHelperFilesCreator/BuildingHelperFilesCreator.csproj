@@ -159,7 +159,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="..\BuildingHelperFilesCreatorInstaller\bin\Debug\BuildingHelperFilesCreatorInstaller.exe">
+      <Link>BuildingHelperFilesCreatorInstaller.exe</Link>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).exe" "$(SolutionDir)Executable\BuildHelper.exe"

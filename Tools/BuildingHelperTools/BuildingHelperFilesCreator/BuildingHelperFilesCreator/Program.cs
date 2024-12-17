@@ -27,11 +27,18 @@ namespace BuildingHelperFilesCreator
 						sw.Write(Assembly.GetEntryAssembly().GetName().Version);
 					};
 
+					return;
 				}
-				return;
+				else if (args[1] == "-u")
+				{
+					MessageBox.Show("Application was successfully updated to new version.");
+				}
 			}
 
-			AutoUpdateService.CheckUpdates();
+			if (AutoUpdateService.CheckUpdates())
+			{
+				return;
+			}
 
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
