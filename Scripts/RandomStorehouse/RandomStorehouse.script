@@ -169,7 +169,8 @@ var
   RNST_CinematicDisabled : boolean;
   //Should starting units be killed.
   RNST_KillingUnitsDisabled: boolean;
-
+  //Do we need open fog around storehouse.
+  RNST_FogAroundStoreHouseDisabled: boolean;
 
 
 function RNST_AddTIntegerElement(arr: TIntegerArray; element: integer): TIntegerArray;
@@ -663,7 +664,7 @@ begin
     //If there is no bound player or bound player still has no storehouse.
     if ((x = 0) and (y = 0))then
     begin
-      x := player.XMIN + (States.KamRandomI((player.XMAX-player.XMIN)))
+      x := player.XMIN + (States.KamRandomI((player.XMAX-player.XMIN)));
       y := player.YMIN + (States.KamRandomI((player.YMAX-player.YMIN)));
     end;
 
@@ -925,7 +926,7 @@ begin
   end;
 
   RNST_SetUnlockedBuildingTypes(playerId, RNST_Players[boundIndex].UnlockedBuildings);
-  RNST_SetPlayerSightRadius(playerId, RNST_Players[boundIndex].SightRadius)
+  RNST_SetPlayerSightRadius(playerId, RNST_Players[boundIndex].SightRadius);
 
   RNST_BindPlayers(playerId, boundPlayerId);
 end;
@@ -963,11 +964,14 @@ begin
     end;
   end;
 
-  for i:= 0 to High(RNST_Players) do
+  if (not RNST_FogAroundStoreHouseDisabled) then
   begin
-    if (S.PlayerEnabled(RNST_Players[i].Id)) then
+    for i:= 0 to High(RNST_Players) do
     begin
-      A.FogCoverAll(i);
+      if (S.PlayerEnabled(RNST_Players[i].Id)) then
+      begin
+        A.FogCoverAll(i);
+      end;
     end;
   end;
 
@@ -978,8 +982,11 @@ begin
       storeHouseId := RNST_FindPlayerStoreHouseId(RNST_Players[i].Id);
       x := S.HousePositionX(storeHouseId);
       y := S.HousePositionY(storeHouseId);
-      A.FogRevealCircle(i, x, y,RNST_GetPlayerSightRadius(RNST_Players[i]));
-      ShareFog(i, x, y);
+      if (not RNST_FogAroundStoreHouseDisabled) then
+      begin
+        A.FogRevealCircle(i, x, y,RNST_GetPlayerSightRadius(RNST_Players[i]));
+        ShareFog(i, x, y);
+      end;
     end;
   end;
 end;
@@ -1030,11 +1037,11 @@ begin
     begin
 
 			if S.PlayerEnabled(i) then
-			begin;
+			begin
       	A.CinematicEnd(i);
       end;
     end;
-	end;
+    end;
 end;
 
 procedure RNST_OnHouseBuilt(aHouse: Integer);
