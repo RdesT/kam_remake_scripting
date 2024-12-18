@@ -49,7 +49,7 @@ namespace BuildingHelperFilesCreator.Services
                             }
                         }
 
-                        Process.Start(tempInstallerExePath, tempFolder + $"{latestExecutableFilePath} {Environment.GetCommandLineArgs()[0]}");
+                        Process.Start(tempInstallerExePath, $"-latestExePath \"{tempFolder + latestExecutableFilePath}\" -appExePath \"{Environment.GetCommandLineArgs()[0]}\"");
                         return true;             
                     }
 					else
