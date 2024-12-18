@@ -13,19 +13,28 @@ namespace BuildingHelperFilesCreatorInstaller
 	{
 		static void Main(string[] args)
 		{
-			if (args.Length > 2)
+			if (args.Length > 1)
 			{
-
-				//We wait for main application to be closed.
-				Task.Delay(500);
-				File.Copy(args[1], args[2], true);
-				var processInfo = new ProcessStartInfo()
+				try
 				{
-					FileName = args[2],
-					WorkingDirectory = new FileInfo(args[2]).Directory.FullName,
-					Arguments = "-u"
-				};
-				Process.Start(processInfo);
+					//We wait for main application to be closed.
+					Task.Delay(500);
+					Console.WriteLine("Trying to copy");
+					File.Copy(args[0], args[1], true);
+					Console.WriteLine("Copied");
+					var processInfo = new ProcessStartInfo()
+					{
+						FileName = args[1],
+						WorkingDirectory = new FileInfo(args[1]).Directory.FullName,
+						Arguments = "-u"
+					};
+					Process.Start(processInfo);
+					Console.WriteLine("Process launched");
+				}
+				catch (Exception exc)
+				{
+					Console.WriteLine(exc);
+				}
 			}
 		}
 	}
