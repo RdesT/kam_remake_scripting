@@ -38,7 +38,6 @@ namespace BuildingHelperFilesCreator.Services
                         
                         //Download file.
                         wc.DownloadFile(RepositoryLink + latestBranchName + ExecutableFolderPath + ExecutableFileName, latestExecutableFilePath);
-
                         
                         var installerResourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(f => f == $"BuildingHelperFilesCreator.{InstallerFileName}");
 

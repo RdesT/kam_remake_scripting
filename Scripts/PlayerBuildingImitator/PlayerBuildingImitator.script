@@ -10,6 +10,9 @@
 {$EVENT evtHouseBuilt:PBI_OnHouseBuilt}
 {$EVENT evtUnitTrained:PBI_OnUnitTrained}
 {$EVENT evtWareProduced:PBI_OnWareProduced}
+{$EVENT evtWoodcuttersModeChanged:PBI_OnWoodcuttersModeChanged}
+{$EVENT evtHouseFlagPointChanged:PBI_OnHouseFlagPointChanged}
+
 
 {$EVENT evtTick:PBI_OnTick}
 {$EVENT evtMissionStart:PBI_OnMissionStart}
@@ -17,18 +20,12 @@
 {$COMMAND Record:PBI_WriteInitFunctionToLog}
 
 type
-	PBI_ActionType = (PBI_Road, PBI_Field, PBI_Wine, PBI_Plan, PBI_Remove, PBI_RemoveBuilding, PBI_Train, PBI_ChangeDistribution, PBI_Order, PBI_WareLocked, PBI_HouseDelivery, PBI_ChangeWoodcutterMode, PBI_ChangeWoodcutterBeacon);
+	PBI_ActionType = (PBI_Road, PBI_Field, PBI_Wine, PBI_Plan, PBI_Remove, PBI_RemoveBuilding, PBI_Train, PBI_ChangeDistribution, PBI_Order, PBI_WareLocked, PBI_HouseDelivery, PBI_ChangeWoodcutterMode, PBI_ChangeFlagPoint);
 
 type PBI_BuildingWaresInfo =
 record
   Id: integer;
   LockedWares: array of TKMWareType;
-end;
-
-type PBI_WoodcuttersInfo =
-record
-  Id: integer;
-  Mode: TKMWoodcutterMode;
 end;
 
 type PBI_Distribution =
@@ -53,12 +50,9 @@ type PBI_Player =
 record
   Id: integer;
   Distribution: PBI_Distribution;
-  ClosedHouses: TIntegerArray;
-  TakeOutHouses: TIntegerArray;
 
   Storehouses: array of PBI_BuildingWaresInfo;
   Barracks: array of PBI_BuildingWaresInfo;
-  Woodcutters: array of PBI_WoodcuttersInfo;
 end;
 
 type PBI_Action =
@@ -71,6 +65,7 @@ record
   UnitType: TKMUnitType;
   WareType: TKMWareType;
   Value: integer;
+  Value1: integer;
 end;
 
 type PBI_ActionCollection =
@@ -141,22 +136,6 @@ begin
   end;
 end;
 
-function PBI_FindWoodcuttersInfoIndex(collection: array of PBI_WoodcuttersInfo; houseId: integer): integer;
-var
-  i: integer;
-begin
-
-  result:= -1;
-  for i:=0 to High(collection) do
-  begin
-    if (collection[i].Id = houseId) then
-    begin
-      result:= i;
-      exit;
-    end;
-  end;
-end;
-
 function PBI_FindWareIndex(collection: array of TKMWareType; wareType: TKMWareType): integer;
 var
   i: integer;
@@ -190,29 +169,12 @@ begin
   setLength(result, Length(result)-1);
 end;
 
-function PBI_RemoveWoodcuttersInfo(collection: array of PBI_WoodcuttersInfo; houseId: integer): array of PBI_WoodcuttersInfo;
-var
-  index: integer;
-begin
-
-  result := collection;
-  index := PBI_FindWoodcuttersInfoIndex(result, houseId);
-
-  if (index = -1) then
-  begin
-    exit;
-  end;
-
-  result[index]:= collection[High(result)];
-  setLength(result, Length(result)-1);
-end;
-
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 //ACTIONS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
 function PBI_AddAction(collection: PBI_ActionCollection; playerId, gameTime: integer; actionType: PBI_ActionType; x, y: integer; houseType: TKMHouseType;
-                    unitType: TKMUnitType; wareType: TKMWareType; value: integer): PBI_ActionCollection;
+                    unitType: TKMUnitType; wareType: TKMWareType; value: integer; value1: integer): PBI_ActionCollection;
 begin
 
   result := collection;
@@ -234,71 +196,72 @@ begin
   result.Items[High(result.Items)].UnitType := unitType;
   result.Items[High(result.Items)].WareType := wareType;
   result.Items[High(result.Items)].Value := value;
+  result.Items[High(result.Items)].Value1 := value1;
 end;
 
 procedure PBI_A_Road(playerId, gameTime, x, y: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Road, x, y, htNone, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Road, x, y, htNone, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_Field(playerId, gameTime, x, y: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Field, x, y, htNone, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Field, x, y, htNone, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_Wine(playerId, gameTime, x, y: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Wine, x, y, htNone, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Wine, x, y, htNone, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_Plan(playerId, gameTime, x, y: integer; houseType: TKMHouseType);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Plan, x, y, houseType, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Plan, x, y, houseType, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_Remove(playerId, gameTime, x, y: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Remove, x, y, htNone, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Remove, x, y, htNone, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_RemoveBuilding(playerId, gameTime, x, y: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Remove, x, y, htNone, utNone, wtNone, 0);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_Remove, x, y, htNone, utNone, wtNone, 0, 0);
 end;
 
 procedure PBI_A_Train(playerId, gameTime, x, y: integer; unitType: TKMUnitType);
 begin
-  PBI_TrainActions:= PBI_AddAction(PBI_TrainActions, playerId, gameTime - 150, PBI_Train, x, y, htNone, unitType, wtNone, 0);
+  PBI_TrainActions:= PBI_AddAction(PBI_TrainActions, playerId, gameTime - 150, PBI_Train, x, y, htNone, unitType, wtNone, 0, 0);
 end;
 
 procedure PBI_A_ChangeDistribution(playerId, gameTime: integer; houseType: TKMHouseType; wareType: TKMWareType; value: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_ChangeDistribution, 0, 0, houseType, utNone, wareType, value);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_ChangeDistribution, 0, 0, houseType, utNone, wareType, value, 0);
 end;
 
 procedure PBI_A_Order(playerId, gameTime, x, y: integer; wareType: TKMWareType; value: integer);
 begin
-  PBI_Orders:= PBI_AddAction(PBI_Orders, playerId, gameTime, PBI_Order, x, y, htNone, utNone, wareType, value);
+  PBI_Orders:= PBI_AddAction(PBI_Orders, playerId, gameTime, PBI_Order, x, y, htNone, utNone, wareType, value, 0);
 end;
 
 procedure PBI_A_HouseDelivery(playerId, gameTime, x, y: integer; value: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_HouseDelivery, x, y, htNone, utNone, wtNone, value);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_HouseDelivery, x, y, htNone, utNone, wtNone, value, 0);
 end;
 
 procedure PBI_A_ChangeWoodcutterMode(playerId, gameTime, x, y, value: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_ChangeWoodcutterMode, x, y, htNone, utNone, wtNone, value);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_ChangeWoodcutterMode, x, y, htNone, utNone, wtNone, value, 0);
 end;
 
-procedure PBI_A_ChangeWoodcutterBeacon();
+procedure PBI_A_ChangeFlagPoint(playerId, gameTime, xHouse, yHouse, x, y: integer);
 begin
-  //TODO. Not implemented.
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_ChangeFlagPoint, xHouse, yHouse, htNone, utNone, wtNone, x, y);
 end;
 
 procedure PBI_A_WareLocked(playerId, gameTime, x, y: integer; wareType: TKMWareType; value: integer);
 begin
-  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_WareLocked, x, y, htNone, utNone, wareType, value);
+  PBI_Actions:= PBI_AddAction(PBI_Actions, playerId, gameTime, PBI_WareLocked, x, y, htNone, utNone, wareType, value, 0);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -428,31 +391,6 @@ begin
   end;
 end;
 
-procedure CheckWoodcutters(playerIndex, houseId: integer);
-var
-  index: integer;
-  mode: TKMWoodcutterMode;
-  location: TKMPoint;
-
-begin
-  index := PBI_FindWoodcuttersInfoIndex(PBI_Players[playerIndex].Woodcutters, houseId);
-  mode := S.HouseWoodcutterMode(houseId);
-
-  if (index = -1) then
-  begin
-    exit;
-  end;
-
-  if (PBI_Players[playerIndex].Woodcutters[index].Mode <> mode) then
-  begin
-    location := S.HousePosition(houseId);
-
-    PBI_Players[playerIndex].Woodcutters[index].Mode := mode;
-    PBI_A_ChangeWoodcutterMode(PBI_Players[playerIndex].Id, S.GameTime, location.X, location.Y, mode);
-  end;
-
-end;
-
 function CheckHouseWareLock(collection: array of PBI_BuildingWaresInfo; playerId, houseId: integer): array of PBI_BuildingWaresInfo;
 var
   wareType: TKMWareType;
@@ -471,7 +409,6 @@ begin
 
   for wareType:= wtTrunk to wtFish do
   begin
-
     wareIndex := PBI_FindWareIndex(result[index].LockedWares, wareType);
     location := S.HousePosition(houseId);
 
@@ -490,7 +427,7 @@ begin
       if (wareIndex <> -1) then
       begin
         result[index].LockedWares[wareIndex] := result[index].LockedWares[High(result[index].LockedWares)];
-        setLength(result, Length(result) -1);
+        setLength(result[index].LockedWares, Length(result[index].LockedWares) -1);
 
         PBI_A_WareLocked(playerId, S.GameTime, location.X, location.Y, wareType, 0);
       end;
@@ -504,9 +441,7 @@ procedure CheckPlayerHouses(playerId, index: integer);
 var
   i: integer;
   houseIds: array of integer;
-  deliveryMode: TKMDeliveryMode;
   location: TKMPoint;
-  elementIndex: integer;
   houseType: TKMHouseType;
 begin
 
@@ -515,15 +450,9 @@ begin
   for i:= 0 to High(houseIds) do
   begin
 
-    deliveryMode := S.HouseDeliveryMode(houseIds[i]);
     location := S.HousePosition(houseIds[i]);
 
     houseType := S.HouseTypeEx(houseIds[i]);
-
-    if (houseType = htWoodcutters) then
-    begin
-      CheckWoodcutters(index, houseIds[i]);
-    end;
 
     if (houseType = htStore) then
     begin
@@ -534,52 +463,6 @@ begin
       PBI_Players[index].Barracks:= CheckHouseWareLock(PBI_Players[index].Barracks, playerId, houseIds[i]);
     end;
 
-    case deliveryMode of
-      dmDelivery:
-        begin
-
-          elementIndex := PBI_FindTIntegerArrayElementIndex(PBI_Players[index].ClosedHouses, houseIds[i]);
-          if (elementIndex <> -1) then
-          begin
-            PBI_Players[index].ClosedHouses := U.ArrayRemoveIndexI(elementIndex, PBI_Players[index].ClosedHouses);
-            PBI_A_HouseDelivery(playerId, S.GameTime, location.X, location.Y, deliveryMode);
-          end else
-          begin
-
-            elementIndex := PBI_FindTIntegerArrayElementIndex(PBI_Players[index].TakeOutHouses, houseIds[i]);
-            if (elementIndex <> -1) then
-            begin
-              PBI_Players[index].TakeOutHouses := U.ArrayRemoveIndexI(elementIndex, PBI_Players[index].TakeOutHouses);
-              PBI_A_HouseDelivery(playerId, S.GameTime, location.X, location.Y, deliveryMode);
-            end;
-          end;
-        end;
-      dmClosed:
-        begin
-
-          if (not U.ArrayHasElementI(houseIds[i], PBI_Players[index].ClosedHouses)) then
-          begin
-
-            setLength(PBI_Players[index].ClosedHouses, Length(PBI_Players[index].ClosedHouses) +1);
-            PBI_Players[index].ClosedHouses[High(PBI_Players[index].ClosedHouses)] := houseIds[i];
-
-            PBI_A_HouseDelivery(playerId, S.GameTime, location.X, location.Y, deliveryMode);
-          end;
-        end;
-      dmTakeOut:
-        begin
-
-          if (not U.ArrayHasElementI(houseIds[i], PBI_Players[index].TakeOutHouses)) then
-          begin
-
-            setLength(PBI_Players[index].TakeOutHouses, Length(PBI_Players[index].TakeOutHouses) +1);
-            PBI_Players[index].TakeOutHouses[High(PBI_Players[index].TakeOutHouses)] := houseIds[i];
-
-            PBI_A_HouseDelivery(playerId, S.GameTime, location.X, location.Y, deliveryMode);
-          end;
-
-        end;
-    end;
   end;
 end;
 
@@ -640,7 +523,6 @@ var
   ownerId: integer;
   location: TKMPoint;
   index: integer;
-  elementIndex: integer;
   houseType: TKMHouseType;
 begin
 
@@ -656,19 +538,6 @@ begin
 
   if (index <> -1)then
   begin
-
-    elementIndex := PBI_FindTIntegerArrayElementIndex(PBI_Players[index].ClosedHouses, aHouse);
-    if (elementIndex <> -1) then
-    begin
-      PBI_Players[index].ClosedHouses := U.ArrayRemoveIndexI(elementIndex, PBI_Players[index].ClosedHouses);
-    end;
-
-    elementIndex := PBI_FindTIntegerArrayElementIndex(PBI_Players[index].TakeOutHouses, aHouse);
-    if (elementIndex <> -1) then
-    begin
-      PBI_Players[index].TakeOutHouses := U.ArrayRemoveIndexI(elementIndex, PBI_Players[index].TakeOutHouses);
-    end;
-
     houseType:= S.HouseTypeEx(aHouse);
 
     if (houseType = htStore) then
@@ -678,10 +547,6 @@ begin
     if (houseType = htBarracks) then
     begin
       PBI_Players[index].Barracks := PBI_RemoveBuildingWaresInfo(PBI_Players[index].Barracks, aHouse);
-    end else
-    if (houseType = htWoodcutters) then
-    begin
-      PBI_Players[index].Woodcutters := PBI_RemoveWoodcuttersInfo(PBI_Players[index].Woodcutters, aHouse);
     end;
   end;
 end;
@@ -707,12 +572,6 @@ begin
   begin
     setLength(PBI_Players[index].Barracks, Length(PBI_Players[index].Barracks) + 1);
     PBI_Players[index].Barracks[High(PBI_Players[index].Barracks)].Id := aHouse;
-  end else
-  if (houseType = htWoodcutters) then
-  begin
-    setLength(PBI_Players[index].Woodcutters, Length(PBI_Players[index].Woodcutters) + 1);
-    PBI_Players[index].Woodcutters[High(PBI_Players[index].Woodcutters)].Id := aHouse;
-    PBI_Players[index].Woodcutters[High(PBI_Players[index].Woodcutters)].Mode := wmChopAndPlant;
   end;
 end;
 
@@ -732,6 +591,30 @@ var
 begin
   location := S.HousePosition(aHouse);
   PBI_A_Order(S.HouseOwner(aHouse), S.GameTime - 28, location.X, location.Y, aWareType, aCount);
+end;
+
+procedure PBI_OnWoodcuttersModeChanged(aHouse: Integer; aOldMode: TKMWoodcutterMode; aNewMode: TKMWoodcutterMode);
+var
+  location: TKMPoint;
+begin
+  location := S.HousePosition(aHouse);
+  PBI_A_ChangeWoodcutterMode(S.HouseOwner(aHouse), S.GameTime, location.X, location.Y, aNewMode);
+end;
+
+procedure PBI_OnHouseDeliveryModeChanged(aHouse: Integer; aOldMode: TKMDeliveryMode; aNewMode: TKMDeliveryMode);
+var
+  location: TKMPoint;
+begin
+  location := S.HousePosition(aHouse);
+  PBI_A_HouseDelivery(S.HouseOwner(aHouse), S.GameTime, location.X, location.Y, aNewMode);
+end;
+
+procedure PBI_OnHouseFlagPointChanged(aHouse: Integer; aOldX: Integer; aOldY: Integer; aNewX: Integer; aNewY: Integer);
+var
+  location: TKMPoint;
+begin
+  location := S.HousePosition(aHouse);
+  PBI_A_ChangeFlagPoint(S.HouseOwner(aHouse), S.GameTime, location.X, location.Y, aNewX, aNewY);
 end;
 
 function PBI_GetAddActionFuncName(actionType: PBI_ActionType): string;
@@ -761,8 +644,8 @@ begin
       result := 'PBI_A_WareLocked';
     PBI_ChangeWoodcutterMode:
       result := 'PBI_A_ChangeWoodcutterMode';
-    PBI_ChangeWoodcutterBeacon:
-      result := 'PBI_A_ChangeWoodcutterBeacon';
+    PBI_ChangeFlagPoint:
+      result := 'PBI_A_ChangeFlagPoint';
   end;
 end;
 
@@ -802,6 +685,11 @@ begin
       (action.ActionType = PBI_ChangeWoodcutterMode) or (action.ActionType = PBI_WareLocked)) then
   begin
     result := result + ',' + IntToStr(action.Value);
+  end;
+
+  if (action.ActionType = PBI_ChangeFlagPoint) then
+  begin
+    result := result + ',' + IntToStr(action.Value) + ',' + IntToStr(action.Value1);
   end;
 
   result := result + ');';
@@ -852,7 +740,7 @@ end;
 function PBI_ExecuteAction(action: PBI_Action): boolean;
 var
   houseId: integer;
-
+  location: TKMPoint;
 begin
 
   //A.Log(PBI_ActionToString(action));
@@ -881,7 +769,6 @@ begin
       begin
         houseId := S.HouseAt(action.Location.X, action.Location.Y);
 
-        A.Log(IntToStr(houseId));
         if (houseId <> -1) then
         begin
           A.HouseDestroy(S.HouseAt(action.Location.X, action.Location.Y), false);
@@ -969,9 +856,18 @@ begin
         end;
 
       end;
-    PBI_ChangeWoodcutterBeacon:
+    PBI_ChangeFlagPoint:
       begin
-        //TODO. Not implemented.
+        houseId := S.HouseAt(action.Location.X, action.Location.Y);
+
+        if (houseId <> -1) then
+        begin
+          location.X := action.Value;
+          location.Y := action.Value1;
+          A.HouseFlagPointSet(houseId, location);
+          result := true;
+        end;
+
       end;
   end;
 end;
