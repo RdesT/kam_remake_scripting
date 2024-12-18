@@ -47,9 +47,14 @@ namespace BuildingHelperFilesCreatorInstaller
 				//We wait for main application to be closed.	
 				Thread.Sleep(2000);
 
+				Console.WriteLine(latestExePath);
+				Console.WriteLine(appExePath);
+
 				File.Copy(latestExePath, appExePath, true);
 
-						processInfo.Arguments = "-update";
+				Console.WriteLine("Copied");
+
+				processInfo.Arguments = "-update";
 
 				Process.Start(processInfo);
 			}
