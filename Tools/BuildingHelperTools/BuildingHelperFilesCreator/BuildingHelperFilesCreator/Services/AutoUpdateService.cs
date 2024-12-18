@@ -13,9 +13,7 @@ namespace BuildingHelperFilesCreator.Services
 {
 	public static class AutoUpdateService
 	{
-        private const string RepositoryLink = "https://raw.githubusercontent.com/RdesT/kam_remake_scripting/";
-        private const string ExecutableFolderPath = "/Tools/BuildingHelperTools/BuildingHelperFilesCreator/Executable/";
-        private const string MasterBranchName = "main";
+        private const string ExecutableUrl = "https://raw.githubusercontent.com/RdesT/kam_remake_scripting/main/Tools/BuildingHelperTools/BuildingHelperFilesCreator/Executable/";
         private const string VersionFileName = "version.txt";
         private const string ExecutableFileName = "BuildHelper.exe";
         private const string InstallerFileName = "BuildingHelperFilesCreatorInstaller.exe";
@@ -26,18 +24,15 @@ namespace BuildingHelperFilesCreator.Services
             {
                 try
                 {
-                    var latestVersion = wc.DownloadString(RepositoryLink + MasterBranchName + ExecutableFolderPath + VersionFileName);
+                    var latestVersion = wc.DownloadString(ExecutableUrl + VersionFileName);
                     var tempFolder = Path.GetTempPath();
                     var tempInstallerExePath = Path.Combine(tempFolder, "BuildHelperInstaller.exe");
                     var latestExecutableFilePath = Path.Combine(tempFolder, ExecutableFileName);
 
                     if (latestVersion != Assembly.GetEntryAssembly().GetName().Version.ToString())
-					{
-                        var parts = latestVersion.Split('.');
-                        var latestBranchName = $"{parts[0]}.{parts[1]}";
-                        
+					{                       
                         //Download file.
-                        wc.DownloadFile(RepositoryLink + latestBranchName + ExecutableFolderPath + ExecutableFileName, latestExecutableFilePath);
+                        wc.DownloadFile(ExecutableUrl + ExecutableFileName, latestExecutableFilePath);
                         
                         var installerResourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames().FirstOrDefault(f => f == $"BuildingHelperFilesCreator.{InstallerFileName}");
 

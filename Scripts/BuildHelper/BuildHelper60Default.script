@@ -150,7 +150,15 @@ begin
         end;
       end;
     2,3,4:
-      result := BH_AddMultipleBuildingInfo(result, htQuarry, 5 - buildings.Quarry, maxBuildingsCount);
+      begin
+        if (player.StartingTimberAmount <= TA_LOW) then
+        begin
+          result := BH_AddMultipleBuildingInfo(result, htQuarry, 4 - buildings.Quarry, maxBuildingsCount);
+        end else
+        begin
+          result := BH_AddMultipleBuildingInfo(result, htQuarry, 5 - buildings.Quarry, maxBuildingsCount);
+        end;
+      end;
     else
       begin
 
@@ -201,6 +209,13 @@ begin
           Inc(needToBuild);
         end;
 
+        if (player.StartingTimberAmount <= TA_LOW) then
+        begin
+          if (buildings.Sawmill > 0) then
+          begin
+            Inc(needToBuild);
+          end;
+        end else
         if ((buildings.Sawmill > 0) or (buildings.Quarry > 3)) then
         begin
           Inc(needToBuild);
@@ -272,6 +287,13 @@ begin
   begin
     if (planning) then
     begin
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        if (buildings.Woodcutters > 0) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
+      end else
       if ((buildings.Woodcutters > 0) and (buildings.Quarry > 1)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
@@ -281,13 +303,25 @@ begin
     exit;
   end;
 
+  //TODO move first 2 to other method.
   case buildings.Sawmill of
     0:
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        if (buildings.Woodcutters > 0) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
+      end else
       if ((buildings.Woodcutters > 0) and (buildings.Quarry > 1)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
       end;
     1:
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        result := BH_AddBuildingInfo(result, htSawmill);
+      end else
       if ((buildings.Woodcutters > 2) and (buildings.GoldMine > 0)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
@@ -329,7 +363,7 @@ begin
   begin
     if (planning) then
     begin
-      if (buildings.Sawmill > 0) then
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htGoldMine);
       end;
@@ -340,7 +374,7 @@ begin
 
   case buildings.GoldMine of
     0:
-      if (buildings.Sawmill > 0) then
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htGoldMine);
       end;
@@ -529,6 +563,8 @@ begin
 
     exit;
   end;
+
+  //TODO move 1st farm to other method.
 
   case buildings.Farm of
     0:
@@ -1282,14 +1318,25 @@ begin
     exit;
   end;
 
-  //TODO count starting wood and trees.
-
   case buildings.Woodcutters of
     0,1,2,3,4,5:
       begin
 
-        needToBuild := 2;
+        if (player.StartingTimberAmount <= TA_LOW) then
+        begin
+          needToBuild := 1;
+        end else
+        begin
+          needToBuild := 2;
+        end;
 
+        if (player.StartingTimberAmount <= TA_LOW) then
+        begin
+          if (buildings.Sawmill > 1) then
+          begin
+            Inc(needToBuild);
+          end;
+        end else
         if ((buildings.Woodcutters > 0) or (buildings.Quarry > 3)) then
         begin
           Inc(needToBuild);
@@ -1339,9 +1386,15 @@ begin
     0:
       result := BH_AddBuildingInfo(result, htSawmill);
     1:
-      if (buildings.Woodcutters > 2) then
       begin
-        result := BH_AddBuildingInfo(result, htSawmill);
+        if (player.StartingTimberAmount <= TA_OK) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end else
+        if (buildings.Woodcutters > 2) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
       end;
     2:
       if (buildings.GoldMine > 1) then
@@ -1378,7 +1431,7 @@ begin
 
   if (not S.PlayerHouseTypeCanBuild(player.Id, htFarm)) then
   begin
-    if (planning and (buildings.Sawmill > 0)) then
+    if (planning and (buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
     begin
       result := BH_AddBuildingInfo(result, htFarm);
     end;

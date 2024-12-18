@@ -2,7 +2,8 @@
 {$DEFINE BuildHelperGlobal}
 
 type
-	BH_FoodAmountEnum = (FA_VERY_LOW, FA_LOW, FA_OK, FA_HIGH, FA_VERY_HIGH);
+  BH_FoodAmountEnum = (FA_VERY_LOW, FA_LOW, FA_OK, FA_HIGH, FA_VERY_HIGH);
+  BH_TimberAmountEnum = (TA_VERY_LOW, TA_LOW, TA_OK, TA_HIGH, TA_VERY_HIGH);
 
 type
   BH_BuildingStrategy = (BS_Null, BS_Default_60, BS_IronStoring_60, BS_LeatherOnly_60, BS_IronOnly_60, BS_IronRush_60, BS_DoubleStable_60, BS_IronAndGold_60, BS_Gold60, BS_Default35);
@@ -118,6 +119,7 @@ record
   BuildingPlans: array of BH_BuildingPlanCollection;
   IsSlowBuildOrder: boolean;
   StartingFoodAmount: BH_FoodAmountEnum;
+  StartingTimberAmount: BH_TimberAmountEnum;
   BuildingStrategy: BH_BuildingStrategy;
   FirstFarmTime: integer;
 

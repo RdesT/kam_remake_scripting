@@ -34,6 +34,13 @@ begin
   begin
     if (planning) then
     begin
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        if (buildings.Woodcutters > 0) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
+      end else
       if ((buildings.Woodcutters > 0) and (buildings.Quarry > 1)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
@@ -43,13 +50,25 @@ begin
     exit;
   end;
 
+  //TODO move first 2 to other method.
   case buildings.Sawmill of
     0:
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        if (buildings.Woodcutters > 0) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
+      end else
       if ((buildings.Woodcutters > 0) and (buildings.Quarry > 1)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
       end;
     1:
+      if (player.StartingTimberAmount <= TA_LOW) then
+      begin
+        result := BH_AddBuildingInfo(result, htSawmill);
+      end else
       if ((buildings.Woodcutters > 2) and (buildings.GoldMine > 0)) then
       begin
         result := BH_AddBuildingInfo(result, htSawmill);
@@ -188,7 +207,8 @@ begin
   begin
     if (planning) then
     begin
-      if (buildings.Sawmill > 0) then
+      //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htFarm);
       end;
@@ -199,7 +219,8 @@ begin
 
   case buildings.Farm of
     0:
-      if (buildings.Sawmill > 0) then
+      //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htFarm);
       end;
@@ -676,9 +697,15 @@ begin
     0:
       result := BH_AddBuildingInfo(result, htSawmill);
     1:
-      if (buildings.Woodcutters > 2) then
       begin
-        result := BH_AddBuildingInfo(result, htSawmill);
+        if (player.StartingTimberAmount <= TA_OK) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end else
+        if (buildings.Woodcutters > 2) then
+        begin
+          result := BH_AddBuildingInfo(result, htSawmill);
+        end;
       end;
     2:
       if (buildings.GoldMine > 1) then
@@ -715,7 +742,7 @@ begin
 
   if (not S.PlayerHouseTypeCanBuild(player.Id, htFarm)) then
   begin
-    if (planning and (buildings.Sawmill > 0)) then
+    if (planning and (buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
     begin
       result := BH_AddBuildingInfo(result, htFarm);
     end;
