@@ -44,14 +44,14 @@ namespace BuildingHelperFilesCreatorInstaller
 
 			try
 			{
-				//We wait for main application to be closed.
-				Task.Delay(2000);
-
+				//We wait for main application to be closed.	
+				Task.Delay(10000);
+				
 				File.Copy(latestExePath, appExePath, true);
 
 				processInfo.Arguments = "-update";
 
-				Process.Start(processInfo);
+				Process.Start(processInfo);					
 			}
 			catch(Exception exc)
 			{
