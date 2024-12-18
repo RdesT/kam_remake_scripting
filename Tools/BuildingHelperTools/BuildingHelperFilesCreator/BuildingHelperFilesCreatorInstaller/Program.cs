@@ -45,7 +45,7 @@ namespace BuildingHelperFilesCreatorInstaller
 			try
 			{
 				//We wait for main application to be closed.
-				Task.Delay(1500);
+				Task.Delay(2000);
 
 				File.Copy(latestExePath, appExePath, true);
 
@@ -53,9 +53,10 @@ namespace BuildingHelperFilesCreatorInstaller
 
 				Process.Start(processInfo);
 			}
-			catch
+			catch(Exception exc)
 			{
 				//Starting process once again if we failed to update for some reason.
+				Console.WriteLine(exc);
 				processInfo.Arguments = "-updateFailed";
 				Process.Start(processInfo);
 			}
