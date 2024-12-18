@@ -31,11 +31,12 @@ namespace BuildingHelperFilesCreator
 			if (args.Length > 1 && args[1] == "-update")
 			{
 				//TODO. Make localized MessageBox.
-				MessageBox.Show("Application was successfully updated to new version. Thank you for testing Vovets1");
+				//MessageBox.Show("Application was successfully updated to new version.");
 			}
 			else if (args.Length > 1 && args[1] == "-updateFailed")
 			{
-				MessageBox.Show("Update failed");
+				//TODO. Make localized MessageBox.
+				//MessageBox.Show("Update failed");
 			}
 			else
 			{
