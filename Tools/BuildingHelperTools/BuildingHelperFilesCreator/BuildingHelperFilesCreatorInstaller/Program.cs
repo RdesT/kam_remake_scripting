@@ -45,24 +45,14 @@ namespace BuildingHelperFilesCreatorInstaller
 			try
 			{
 				//We wait for main application to be closed.	
-				Thread.Sleep(2000);
-
-				Console.WriteLine(latestExePath);
-				Console.WriteLine(appExePath);
-
+				Thread.Sleep(1000);
 				File.Copy(latestExePath, appExePath, true);
-
-				Console.WriteLine("Copied");
-
 				processInfo.Arguments = "-update";
-
 				Process.Start(processInfo);
 			}
 			catch(Exception exc)
 			{
 				//Starting process once again if we failed to update for some reason.
-				Console.WriteLine(exc);
-				Console.ReadLine();
 				processInfo.Arguments = "-updateFailed";
 				Process.Start(processInfo);
 			}
