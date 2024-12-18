@@ -33,6 +33,10 @@ namespace BuildingHelperFilesCreator
 				//TODO. Make localized MessageBox.
 				MessageBox.Show("Application was successfully updated to new version. Thank you for testing Vovets1");
 			}
+			else if (args.Length > 1 && args[1] == "-v")
+			{
+				MessageBox.Show("Update failed");
+			}
 			else
 			{
 				if (AutoUpdateService.CheckUpdates())
