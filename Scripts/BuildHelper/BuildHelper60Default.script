@@ -350,7 +350,7 @@ begin
         result := BH_AddBuildingInfo(result, htGoldMine);
       end;
     2:
-      if (buildings.ArmorWorkshop > 3) then
+      if (buildings.ArmorWorkshop > 2) then
       begin
         result := BH_AddBuildingInfo(result, htGoldMine);
       end;
@@ -427,7 +427,7 @@ begin
       end;
     8,9:
       begin
-        if ((buildings.Barracks > 0) and (buildings.Tannery > 0) and (buildings.IronSmithy > 2)) then
+        if ((buildings.Barracks > 0) and ((buildings.Tannery > 0) or (buildings.IronSmithy > 2))) then
         begin
           Inc(needToBuild);
         end;
@@ -441,7 +441,7 @@ begin
       end;
 
     10:
-      if (buildings.ArmorWorkshop > 3) then
+      if (buildings.ArmorWorkshop > 2) then
       begin
         result := BH_AddBuildingInfo(result, htCoalMine);
       end;
@@ -580,7 +580,7 @@ begin
           Inc(needToBuild);
         end;
 
-        if (buildings.IronSmithy > 1) then
+        if ((buildings.IronSmithy > 1) or (buildings.Swine > 2)) then
         begin
           Inc(needToBuild);
         end;
