@@ -51,12 +51,13 @@ namespace BuildingHelperFilesCreatorInstaller
 
 						processInfo.Arguments = "-update";
 
-				Process.Start(processInfo);					
+				Process.Start(processInfo);
 			}
 			catch(Exception exc)
 			{
 				//Starting process once again if we failed to update for some reason.
 				Console.WriteLine(exc);
+				Console.ReadLine();
 				processInfo.Arguments = "-updateFailed";
 				Process.Start(processInfo);
 			}
