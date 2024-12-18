@@ -1129,6 +1129,7 @@ var
   playerId: integer;
   ids: array of integer;
   foodAmount: single;
+  timberAmount: integer;
 
 begin
 
@@ -1142,15 +1143,15 @@ begin
   for playerId:= 0 to S.LocationCount - 1 do
   begin
 
-    //if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
-    //begin
-    //  continue;
-    //end;
-
-    if (not S.PlayerEnabled(playerId)) then
+    if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
     begin
       continue;
     end;
+
+    //if (not S.PlayerEnabled(playerId)) then
+    //begin
+    //  continue;
+    //end;
 
     index := BH_FindPlayerIndex(playerId);
 
@@ -1163,6 +1164,7 @@ begin
     ids := S.PlayerGetAllHouses(playerId);
 
     foodAmount := 0;
+    timberAmount := S.HouseWareAmount(ids[i], wtTimber);
 
     for i:= 0 to High(ids) do
     begin
@@ -1184,21 +1186,40 @@ begin
     begin
       BH_Players[index].StartingFoodAmount := FA_VERY_LOW;
     end else
-    if ((foodAmount >= 27) and (foodAmount < 36)) then
+    if (foodAmount < 36) then
     begin
       BH_Players[index].StartingFoodAmount := FA_LOW;
     end else
-    if ((foodAmount >= 36) and (foodAmount < 45)) then
+    if (foodAmount < 45) then
     begin
       BH_Players[index].StartingFoodAmount := FA_OK;
     end else
-    if ((foodAmount >= 45) and (foodAmount < 54)) then
+    if (foodAmount < 54) then
     begin
       BH_Players[index].StartingFoodAmount := FA_HIGH;
     end else
-    if (foodAmount >= 54) then
     begin
       BH_Players[index].StartingFoodAmount := FA_VERY_HIGH;
+    end;
+
+    if (foodAmount < 34) then
+    begin
+      BH_Players[index].StartingTimberAmount := TA_VERY_LOW;
+    end else
+    if (foodAmount < 37) then
+    begin
+      BH_Players[index].StartingTimberAmount := TA_LOW;
+    end else
+    if (foodAmount < 40) then
+    begin
+      BH_Players[index].StartingTimberAmount := TA_OK;
+    end else
+    if (foodAmount < 43) then
+    begin
+      BH_Players[index].StartingTimberAmount := TA_HIGH;
+    end else
+    begin
+      BH_Players[index].StartingTimberAmount := TA_VERY_HIGH;
     end;
 
     if (not S.PlayerHouseTypeCanBuild(playerId, htInn)) then
