@@ -19,7 +19,9 @@ namespace BuildingHelperFilesCreatorInstaller
 				{
 					//We wait for main application to be closed.
 					Task.Delay(500);
+					Console.WriteLine("Trying to copy");
 					File.Copy(args[0], args[1], true);
+					Console.WriteLine("Copied");
 					var processInfo = new ProcessStartInfo()
 					{
 						FileName = args[1],
@@ -27,7 +29,7 @@ namespace BuildingHelperFilesCreatorInstaller
 						Arguments = "-u"
 					};
 					Process.Start(processInfo);
-				
+					Console.WriteLine("Process launched");
 				}
 				catch (Exception exc)
 				{
