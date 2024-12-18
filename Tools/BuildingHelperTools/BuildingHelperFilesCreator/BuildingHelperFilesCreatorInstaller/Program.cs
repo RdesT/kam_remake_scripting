@@ -49,7 +49,7 @@ namespace BuildingHelperFilesCreatorInstaller
 				
 				File.Copy(latestExePath, appExePath, true);
 
-				processInfo.Arguments = "-update";
+						processInfo.Arguments = "-update";
 
 				Process.Start(processInfo);					
 			}
