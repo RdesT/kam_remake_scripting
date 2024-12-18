@@ -187,6 +187,8 @@ namespace BuildingHelperFilesCreator
 				}				
 			}
 
+			Text = _localizationService.GetLocalizedString($"{Name}.Text") + " " + Assembly.GetEntryAssembly().GetName().Version.ToString(); ;
+
 			foreach (Control control in BotPannel.Controls)
 			{ 
 				if (control is MapLocation)
@@ -357,7 +359,11 @@ namespace BuildingHelperFilesCreator
 				Height = Height - (_mapInfo.PlayersCount / 5 + 1) * _defaultMapLocation.Height;
 			}
 		}
-		
+
+		private void AboutToolStrip_Click(object sender, EventArgs e)
+		{
+		}
+
 		#endregion
 	}
 }

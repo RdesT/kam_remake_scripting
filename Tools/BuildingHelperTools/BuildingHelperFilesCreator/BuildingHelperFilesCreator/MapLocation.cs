@@ -54,11 +54,6 @@ namespace BuildingHelperFilesCreator
 
 		}
 
-		private void FillComboBoxDataSourses()
-		{
-			
-		}
-
 		public MapLocation(LocalizationService localizationService)
 		{
 			_localizationService = localizationService;

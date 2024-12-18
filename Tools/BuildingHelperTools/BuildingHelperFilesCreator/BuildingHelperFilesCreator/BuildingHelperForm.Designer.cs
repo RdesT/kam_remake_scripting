@@ -35,6 +35,7 @@ namespace BuildingHelperFilesCreator
 			this.LanguageToolStrip = new System.Windows.Forms.ToolStripMenuItem();
 			this.HelpToolStrip = new System.Windows.Forms.ToolStripMenuItem();
 			this.ExitToolStrip = new System.Windows.Forms.ToolStripMenuItem();
+			this.AboutToolStrip = new System.Windows.Forms.ToolStripMenuItem();
 			this.TopPannel = new System.Windows.Forms.Panel();
 			this.PeaceTimeComboBox = new System.Windows.Forms.ComboBox();
 			this.PeaceTimeLabel = new System.Windows.Forms.Label();
@@ -57,7 +58,8 @@ namespace BuildingHelperFilesCreator
             this.OpenMapFolderMenuItem,
             this.LanguageToolStrip,
             this.HelpToolStrip,
-            this.ExitToolStrip});
+            this.ExitToolStrip,
+            this.AboutToolStrip});
 			resources.ApplyResources(this.menuStrip1, "menuStrip1");
 			this.menuStrip1.Name = "menuStrip1";
 			// 
@@ -83,6 +85,13 @@ namespace BuildingHelperFilesCreator
 			this.ExitToolStrip.Name = "ExitToolStrip";
 			resources.ApplyResources(this.ExitToolStrip, "ExitToolStrip");
 			this.ExitToolStrip.Click += new System.EventHandler(this.ExitToolStripMenuItem1_Click);
+			// 
+			// AboutToolStrip
+			// 
+			this.AboutToolStrip.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+			this.AboutToolStrip.Name = "AboutToolStrip";
+			resources.ApplyResources(this.AboutToolStrip, "AboutToolStrip");
+			this.AboutToolStrip.Click += new System.EventHandler(this.AboutToolStrip_Click);
 			// 
 			// TopPannel
 			// 
@@ -201,6 +210,7 @@ namespace BuildingHelperFilesCreator
 		private System.Windows.Forms.ToolStripMenuItem LanguageToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem HelpToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem ExitToolStrip;
+		private System.Windows.Forms.ToolStripMenuItem AboutToolStrip;
 	}
 }
 

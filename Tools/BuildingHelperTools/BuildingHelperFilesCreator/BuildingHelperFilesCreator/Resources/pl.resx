@@ -120,6 +120,9 @@
   <data name="BuildingHelperForm.Size" xml:space="preserve">
     <value>801; 166</value>
   </data>
+  <data name="BuildingHelperForm.Text" xml:space="preserve">
+    <value>Pomocnik budowlany</value>
+  </data>
   <data name="Control.BotPannel.Location" xml:space="preserve">
     <value>0; 127</value>
   </data>

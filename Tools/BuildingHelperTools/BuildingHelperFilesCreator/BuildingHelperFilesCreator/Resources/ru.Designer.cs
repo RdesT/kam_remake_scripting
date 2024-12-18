@@ -70,6 +70,15 @@ namespace BuildingHelperFilesCreator.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Помощник по строительству.
+        /// </summary>
+        internal static string BuildingHelperForm_Text {
+            get {
+                return ResourceManager.GetString("BuildingHelperForm.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 0; 127.
         /// </summary>
         internal static string Control_BotPannel_Location {

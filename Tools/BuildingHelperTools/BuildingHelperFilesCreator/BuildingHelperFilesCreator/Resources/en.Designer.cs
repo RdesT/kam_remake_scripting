@@ -70,6 +70,15 @@ namespace BuildingHelperFilesCreator.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Build helper.
+        /// </summary>
+        internal static string BuildingHelperForm_Text {
+            get {
+                return ResourceManager.GetString("BuildingHelperForm.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 0; 97.
         /// </summary>
         internal static string Control_BotPannel_Location {

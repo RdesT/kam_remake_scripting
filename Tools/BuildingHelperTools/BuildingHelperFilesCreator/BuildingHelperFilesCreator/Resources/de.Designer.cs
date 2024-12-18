@@ -70,6 +70,15 @@ namespace BuildingHelperFilesCreator.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bauhelfer.
+        /// </summary>
+        internal static string BuildingHelperForm_Text {
+            get {
+                return ResourceManager.GetString("BuildingHelperForm.Text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 0; 127.
         /// </summary>
         internal static string Control_BotPannel_Location {
@@ -376,7 +385,7 @@ namespace BuildingHelperFilesCreator.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Default.
+        ///   Looks up a localized string similar to Standard.
         /// </summary>
         internal static string Strategy_BS_Default_60 {
             get {
