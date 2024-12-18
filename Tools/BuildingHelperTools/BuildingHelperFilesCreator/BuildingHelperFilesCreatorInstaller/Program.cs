@@ -45,8 +45,8 @@ namespace BuildingHelperFilesCreatorInstaller
 			try
 			{
 				//We wait for main application to be closed.	
-				Task.Delay(10000);
-				
+				Thread.Sleep(2000);
+
 				File.Copy(latestExePath, appExePath, true);
 
 						processInfo.Arguments = "-update";
