@@ -49,14 +49,14 @@ namespace BuildingHelperFilesCreatorInstaller
 
 				File.Copy(latestExePath, appExePath, true);
 
-				processInfo.Arguments = "";
+				processInfo.Arguments = "-update";
 
 				Process.Start(processInfo);
 			}
 			catch
 			{
 				//Starting process once again if we failed to update for some reason.
-				processInfo.Arguments = "";
+				processInfo.Arguments = "-updateFailed";
 				Process.Start(processInfo);
 			}
 		}
