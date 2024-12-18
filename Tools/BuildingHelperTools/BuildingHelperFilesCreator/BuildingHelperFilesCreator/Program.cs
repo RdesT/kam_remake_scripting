@@ -31,7 +31,7 @@ namespace BuildingHelperFilesCreator
 			if (args.Length > 1 && args[1] == "-u")
 			{
 				//TODO. Make localized MessageBox.
-				//MessageBox.Show("Application was successfully updated to new version.");
+				MessageBox.Show("Application was successfully updated to new version. Thank you for testing Vovets1");
 			}
 			else
 			{
