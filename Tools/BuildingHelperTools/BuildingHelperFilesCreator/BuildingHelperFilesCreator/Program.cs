@@ -18,7 +18,7 @@ namespace BuildingHelperFilesCreator
 		static void Main()
 		{
 			var args = Environment.GetCommandLineArgs();
-			Console.WriteLine("Opened");
+
 			if (args.Length > 1 && args[1] == "-v")
 			{
 				using (StreamWriter sw = new StreamWriter(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "version.txt")))
@@ -30,7 +30,8 @@ namespace BuildingHelperFilesCreator
 
 			if (args.Length > 1 && args[1] == "-u")
 			{
-				MessageBox.Show("Application was successfully updated to new version.");
+				//TODO. Make localized MessageBox.
+				//MessageBox.Show("Application was successfully updated to new version.");
 			}
 			else
 			{

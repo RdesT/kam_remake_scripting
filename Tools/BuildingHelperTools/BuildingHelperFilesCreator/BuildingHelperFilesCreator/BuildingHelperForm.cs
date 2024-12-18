@@ -147,7 +147,7 @@ namespace BuildingHelperFilesCreator
 			_defaultStrategyValues.Clear();
 			_defaultStrategyValues.Add(BuildingStrategyEnum.Default60, _localizationService.GetLocalizedString("Strategy.BS_Default_60"));
 			_defaultStrategyValues.Add(BuildingStrategyEnum.IronStoring60, _localizationService.GetLocalizedString("Strategy.BS_IronStoring_60"));
-			_defaultStrategyValues.Add(BuildingStrategyEnum.LeatherOnly60, _localizationService.GetLocalizedString("Strategy.BS_LeatherOnly_60"));
+			//_defaultStrategyValues.Add(BuildingStrategyEnum.LeatherOnly60, _localizationService.GetLocalizedString("Strategy.BS_LeatherOnly_60"));
 			//_defaultStrategyValues.Add(BuildingStrategyEnum.LeatherOnly60, GetLocalizedString("Strategy.DoubleStable"));
 			//_defaultStrategyValues.Add(BuildingStrategyEnum.LeatherOnly60, GetLocalizedString("Strategy.IronRush"));
 
@@ -307,6 +307,11 @@ namespace BuildingHelperFilesCreator
 
 		private void OpenMapFolderToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			if (!string.IsNullOrEmpty(CurrentDirrectoryTextBox.Text))
+			{
+				_folderBrowserDialog.SelectedPath = CurrentDirrectoryTextBox.Text;
+			}
+			
 			if (_folderBrowserDialog.ShowDialog() == DialogResult.OK)
 			{
 				_mapInfo = _filesService.GetMapInfo(_folderBrowserDialog.SelectedPath);
