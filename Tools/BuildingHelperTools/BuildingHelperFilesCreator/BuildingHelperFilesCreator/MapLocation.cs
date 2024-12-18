@@ -44,7 +44,7 @@ namespace BuildingHelperFilesCreator
 			_strategyValues.Add(BuildingStrategyEnum.None, _localizationService.GetLocalizedString("Strategy.BS_Null"));
 			_strategyValues.Add(BuildingStrategyEnum.Default60, _localizationService.GetLocalizedString("Strategy.BS_Default_60"));
 			_strategyValues.Add(BuildingStrategyEnum.IronStoring60, _localizationService.GetLocalizedString("Strategy.BS_IronStoring_60"));
-			_strategyValues.Add(BuildingStrategyEnum.LeatherOnly60, _localizationService.GetLocalizedString("Strategy.BS_LeatherOnly_60"));
+			//_strategyValues.Add(BuildingStrategyEnum.LeatherOnly60, _localizationService.GetLocalizedString("Strategy.BS_LeatherOnly_60"));
 
 			StrategyComboBox.DataSource = new BindingSource(_strategyValues, null);
 			StrategyComboBox.DisplayMember = "Value";
@@ -71,7 +71,7 @@ namespace BuildingHelperFilesCreator
 
 		private readonly Dictionary<BuildingStrategyEnum, string> _strategyValues = new Dictionary<BuildingStrategyEnum, string>
 		{
-			{ BuildingStrategyEnum.None, "None" }, { BuildingStrategyEnum.Default60, "Default" }, { BuildingStrategyEnum.IronStoring60, "Iron storing" }, { BuildingStrategyEnum.LeatherOnly60, "LeatherOnly" }
+			{ BuildingStrategyEnum.None, "None" }, { BuildingStrategyEnum.Default60, "Default" }, { BuildingStrategyEnum.IronStoring60, "Iron storing" }//, { BuildingStrategyEnum.LeatherOnly60, "LeatherOnly" }
 		};
 	}
 }
