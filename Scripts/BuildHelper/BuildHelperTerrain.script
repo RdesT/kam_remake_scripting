@@ -1353,7 +1353,7 @@ begin
 
       tileType := S.MapTileType(x,y);
 
-      if ((tileType = 167) or (tileType = 168)) then
+      if ((tileType = 167) or (tileType = 168) or (tileType = 170)) then
       begin
 
         BH_TryToAddGoldConflicts(x,y,goldTilesInRow);
@@ -1378,7 +1378,7 @@ begin
 
 
       end else
-      if ((tileType = 172) or (tileType = 175))  then
+      if ((tileType = 172) or (tileType = 174) or (tileType = 175))  then
       begin
 
         BH_TryToAddIronConflicts(x,y,ironTilesInRow);
