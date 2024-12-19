@@ -1,6 +1,6 @@
-{$IFNDEF DEBUG}
-  {$DEFINE DEBUG}
-{$ENDIF}
+//{$IFNDEF DEBUG}
+//  {$DEFINE DEBUG}
+//{$ENDIF}
 
 {$IFNDEF BuildHelper60IronStoring}
 {$DEFINE BuildHelper60IronStoring}
@@ -292,7 +292,7 @@ begin
   case buildings.Swine of
     0:
       begin
-        if ((player.StartingFoodAmount = FA_VERY_LOW) and (buildings.Fishermans = 0)) then
+        if ((player.StartingFoodAmount = FA_VERY_LOW) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
           if ((buildings.Mill > 0) and (buildings.Farm > 2)) then
           begin
@@ -318,8 +318,7 @@ begin
     1:
       begin
 
-      if ((player.StartingFoodAmount = FA_VERY_LOW) or
-         ((player.StartingFoodAmount = FA_LOW) and (buildings.Fishermans = 0))) then
+      if ((player.StartingFoodAmount <= FA_LOW) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
 
           if ((buildings.Mill > 0) and (buildings.Farm > 3)) then
@@ -334,8 +333,7 @@ begin
       end;
     2:
       begin
-        if ((player.StartingFoodAmount = FA_VERY_LOW) or (player.StartingFoodAmount = FA_LOW) or
-           ((player.StartingFoodAmount = FA_OK) and (buildings.Fishermans = 0))) then
+        if ((player.StartingFoodAmount <= FA_OK) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
 
           if ((buildings.Mill > 0) and (buildings.Farm > 4)) then
@@ -479,20 +477,36 @@ begin
     exit;
   end;
 
-  if ((player.StartingFoodAmount = FA_VERY_LOW) or (player.StartingFoodAmount = FA_LOW)) then
-  begin
-    if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0)) then
-    begin
-      result := BH_AddBuildingInfo(result, htFishermans);
-    end;
-  end else
-  begin
-    if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0) and (buildings.Farm > 2)) then
-    begin
-      result := BH_AddBuildingInfo(result, htFishermans);
-    end;
+  case buildings.Fishermans of
+    0:
+      if (player.StartingFoodAmount <= FA_LOW) then
+      begin
+        if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0)) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end else
+      begin
+        if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0) and (buildings.Farm > 2)) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end;
+    1:
+      if (player.StartingFoodAmount <= FA_LOW) then
+      begin
+        if (buildings.Farm > 4) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end else
+      begin
+        if ((buildings.Farm > 6) and (buildings.Stables > 0)) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end;
   end;
-
 end;
 
 function BH_IronStoring60_AddIronMines(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
@@ -744,6 +758,7 @@ begin
 
   if (not S.PlayerHouseTypeCanBuild(player.Id, htFarm)) then
   begin
+    //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
     if (planning and (buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
     begin
       result := BH_AddBuildingInfo(result, htFarm);
@@ -754,7 +769,11 @@ begin
 
   case buildings.Farm of
     0:
-      result := BH_AddBuildingInfo(result, htFarm);
+      //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
+      begin
+        result := BH_AddBuildingInfo(result, htFarm);
+      end;
     1,2,3,4,5,6:
       begin
         if ((buildings.Woodcutters >= 5) or (buildings.Metallurgists > 0)) then

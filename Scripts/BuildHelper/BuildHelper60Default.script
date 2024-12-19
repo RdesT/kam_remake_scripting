@@ -1,6 +1,6 @@
-{$IFNDEF DEBUG}
-  {$DEFINE DEBUG}
-{$ENDIF}
+//{$IFNDEF DEBUG}
+//  {$DEFINE DEBUG}
+//{$ENDIF}
 
 {$IFNDEF BuildHelper60Default}
 {$DEFINE BuildHelper60Default}
@@ -151,7 +151,7 @@ begin
       end;
     2,3,4:
       begin
-        if (player.StartingTimberAmount <= TA_LOW) then
+        if ((player.StartingTimberAmount <= TA_LOW) and (buildings.Sawmill = 0)) then
         begin
           result := BH_AddMultipleBuildingInfo(result, htQuarry, 4 - buildings.Quarry, maxBuildingsCount);
         end else
@@ -408,7 +408,7 @@ begin
   begin
     if (planning) then
     begin
-      if (buildings.Sawmill > 0) then
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htCoalMine);
       end;
@@ -419,7 +419,7 @@ begin
 
   case buildings.CoalMine of
     0:
-      if (buildings.Sawmill > 0) then
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 2)) then
       begin
         result := BH_AddBuildingInfo(result, htCoalMine);
       end;
@@ -660,7 +660,7 @@ begin
   case buildings.Swine of
     0:
       begin
-        if ((player.StartingFoodAmount = FA_VERY_LOW) and (buildings.Fishermans = 0)) then
+        if ((player.StartingFoodAmount = FA_VERY_LOW) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
           if ((buildings.Mill > 0) and (buildings.Farm > 2)) then
           begin
@@ -686,8 +686,7 @@ begin
     1:
       begin
 
-      if ((player.StartingFoodAmount = FA_VERY_LOW) or
-         ((player.StartingFoodAmount = FA_LOW) and (buildings.Fishermans = 0))) then
+        if ((player.StartingFoodAmount <= FA_LOW) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
 
           if ((buildings.Mill > 0) and (buildings.Farm > 3)) then
@@ -702,8 +701,7 @@ begin
       end;
     2:
       begin
-        if ((player.StartingFoodAmount = FA_VERY_LOW) or (player.StartingFoodAmount = FA_LOW) or
-           ((player.StartingFoodAmount = FA_OK) and (buildings.Fishermans = 0))) then
+        if ((player.StartingFoodAmount <= FA_OK) and (buildings.Fishermans + player.PossibleFishermansCount = 0)) then
         begin
 
           if ((buildings.Mill > 0) and (buildings.Farm > 4)) then
@@ -752,7 +750,7 @@ begin
     end;
   end else
 
-  if ((player.StartingFoodAmount = FA_HIGH) and (buildings.Fishermans > 0)) then
+  if ((player.StartingFoodAmount = FA_HIGH) and (buildings.Fishermans + player.PossibleFishermansCount > 0)) then
   begin
     if ((buildings.Stables = 0) and (buildings.Farm > 5) and (buildings.Swine > 2)) then
     begin
@@ -791,7 +789,7 @@ begin
     exit;
   end;
 
-  if ((player.StartingFoodAmount = FA_VERY_HIGH) or ((player.StartingFoodAmount = FA_HIGH) and (buildings.Fishermans > 0))) then
+  if ((player.StartingFoodAmount = FA_VERY_HIGH) or ((player.StartingFoodAmount = FA_HIGH) and (buildings.Fishermans + player.PossibleFishermansCount > 0))) then
   begin
 
     if (buildings.WeaponSmithy < 2) then
@@ -836,7 +834,7 @@ begin
       end;
 
     FA_OK:
-      if (buildings.Fishermans = 0) then
+      if (buildings.Fishermans + player.PossibleFishermansCount = 0) then
       begin
 
         if ((buildings.Farm > 3) and (buildings.Swine > 1)) then
@@ -854,7 +852,7 @@ begin
 
     FA_HIGH:
 
-      if (buildings.Fishermans = 0) then
+      if (buildings.Fishermans + player.PossibleFishermansCount = 0) then
       begin
 
         if ((buildings.Farm > 5) and (buildings.Swine > 2)) then
@@ -1029,6 +1027,28 @@ begin
     exit;
   end;
 
+  case buildings.Fishermans of
+    0:
+      if ((buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0)) then
+      begin
+        result := BH_AddBuildingInfo(result, htFishermans);
+      end;
+    1:
+      if (player.StartingFoodAmount <= FA_OK) then
+      begin
+        if (buildings.Farm > 2) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end else
+      begin
+        if (buildings.Farm > 6) then
+        begin
+          result := BH_AddBuildingInfo(result, htFishermans);
+        end;
+      end;
+  end;
+
   if ((buildings.Fishermans = 0) and (buildings.Woodcutters >= 5) and (buildings.Metallurgists > 0) and (buildings.Inn > 0)) then
   begin
     result := BH_AddBuildingInfo(result, htFishermans);
@@ -1056,7 +1076,6 @@ begin
   end;
 
   case buildings.IronMine of
-
     0:
       if ((buildings.Metallurgists > 0) and (buildings.Woodcutters >= 5) and (buildings.Farm > 1)) then
       begin
@@ -1078,7 +1097,10 @@ begin
         result := BH_AddBuildingInfo(result, htIronMine);
       end;
     4:
-      result := BH_AddBuildingInfo(result, htIronMine);
+      if (buildings.ArmorWorkshop > 3) then
+      begin
+        result := BH_AddBuildingInfo(result, htIronMine);
+      end;
     5:
       result := BH_AddBuildingInfo(result, htIronMine);
   end;
@@ -1114,13 +1136,13 @@ begin
         result := BH_AddBuildingInfo(result, htIronSmithy);
       end;
     1:
-      if ((buildings.ArmorSmithy + buildings.WeaponSmithy) > 1) then
+      if ((buildings.IronMine > 1) and (((buildings.ArmorSmithy + buildings.WeaponSmithy) > 0) or (buildings.CoalMine > 5))) then
       begin
         result := BH_AddBuildingInfo(result, htIronSmithy);
       end;
     2:
       //TODO think about it. Not sure.
-      if (buildings.Farm > 5) then
+      if ((buildings.IronMine > 2) and (buildings.Farm > 5)) then
       begin
         result := BH_AddBuildingInfo(result, htIronSmithy);
       end;
@@ -1431,7 +1453,8 @@ begin
 
   if (not S.PlayerHouseTypeCanBuild(player.Id, htFarm)) then
   begin
-    if (planning and (buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
+    //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
+    if ((buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
     begin
       result := BH_AddBuildingInfo(result, htFarm);
     end;
@@ -1441,7 +1464,11 @@ begin
 
   case buildings.Farm of
     0:
-      result := BH_AddBuildingInfo(result, htFarm);
+      //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.
+      if ((buildings.Sawmill > 0) and (buildings.Quarry > 3)) then
+      begin
+        result := BH_AddBuildingInfo(result, htFarm);
+      end;
     1,2,3,4,5,6:
       begin
         if ((buildings.Woodcutters >= 5) or (buildings.Metallurgists > 0)) then
