@@ -1,6 +1,6 @@
-{$IFNDEF DEBUG}
-  {$DEFINE DEBUG}
-{$ENDIF}
+//{$IFNDEF DEBUG}
+//  {$DEFINE DEBUG}
+//{$ENDIF}
 
 {$IFDEF DEBUG}
   {$IFNDEF BuildHelperCore}
