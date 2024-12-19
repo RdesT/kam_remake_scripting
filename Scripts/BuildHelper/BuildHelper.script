@@ -3,7 +3,7 @@
 {$INCLUDE BuildHelper60Default.script}
 {$INCLUDE BuildHelper60IronStoring.script}
 //{$INCLUDE BuildHelper60LeatherOnly.script}
-{$INCLUDE BuildHelper35Default.script}
+//{$INCLUDE BuildHelper35Default.script}
 
 {$EVENT evtTick:BH_OnTick}
 {$EVENT evtMissionStart:BH_OnMissionStart}
@@ -205,8 +205,8 @@ begin
     BS_LeatherOnly_60:
       result := BH_Default60_GetPlannedHouses(player, buildings, planning);
       //result := BH_LeatherOnly60_GetPlannedHouses(player, buildings, planning);
-    BS_Default35:
-      result := BH_Default35_GetPlannedHouses(player, buildings, planning);
+    //BS_Default35:
+    //  result := BH_Default35_GetPlannedHouses(player, buildings, planning);
 
   end;
 end;

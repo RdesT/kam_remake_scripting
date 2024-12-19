@@ -226,7 +226,7 @@
     <value>Standort</value>
   </data>
   <data name="Strategy.BS_Default_60" xml:space="preserve">
-    <value>Standard</value>
+    <value>Default</value>
   </data>
   <data name="Strategy.BS_DoubleStable_60" xml:space="preserve">
     <value>2 

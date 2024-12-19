@@ -1164,7 +1164,7 @@ begin
     ids := S.PlayerGetAllHouses(playerId);
 
     foodAmount := 0;
-    timberAmount := S.HouseWareAmount(ids[i], wtTimber);
+    timberAmount := 0;
 
     for i:= 0 to High(ids) do
     begin
@@ -1172,7 +1172,7 @@ begin
 
       if (S.HouseTypeEx(ids[i]) = htStore) then
       begin
-
+        timberAmount := S.HouseWareAmount(ids[i], wtTimber);
         foodAmount := S.HouseWareAmount(ids[i], wtSausage) * BH_Sausage + foodAmount;
         foodAmount := S.HouseWareAmount(ids[i], wtFish) * BH_Fish + foodAmount;
         foodAmount := S.HouseWareAmount(ids[i], wtBread) * BH_Bread + foodAmount;

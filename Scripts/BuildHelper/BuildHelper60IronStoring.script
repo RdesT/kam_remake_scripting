@@ -217,6 +217,8 @@ begin
     exit;
   end;
 
+  //TODO move 1st farm to other method.
+
   case buildings.Farm of
     0:
       //Check quarries for maps where farm is unlocked at start. We don't want make farm too fast.

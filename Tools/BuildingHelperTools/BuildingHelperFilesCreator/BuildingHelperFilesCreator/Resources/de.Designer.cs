@@ -385,7 +385,7 @@ namespace BuildingHelperFilesCreator.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Standard.
+        ///   Looks up a localized string similar to Default.
         /// </summary>
         internal static string Strategy_BS_Default_60 {
             get {
