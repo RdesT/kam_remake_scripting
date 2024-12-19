@@ -606,10 +606,10 @@ begin
   if (planning) then
   begin
     result := result + 1;
-    if (result > 6) then
-    begin
-      result := 6;
-    end;
+    //if (result > 6) then
+    //begin
+    //  result := 6;
+    //end;
   end;
 end;
 
@@ -1143,15 +1143,15 @@ begin
   for playerId:= 0 to S.LocationCount - 1 do
   begin
 
-    if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
-    begin
-      continue;
-    end;
-
-    //if (not S.PlayerEnabled(playerId)) then
+    //if (not S.PlayerEnabled(playerId) or S.PlayerIsAI(playerId)) then
     //begin
     //  continue;
     //end;
+
+    if (not S.PlayerEnabled(playerId)) then
+    begin
+      continue;
+    end;
 
     index := BH_FindPlayerIndex(playerId);
 
