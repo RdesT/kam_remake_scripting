@@ -1527,6 +1527,11 @@ var
 
 begin
 
+  //If call of this event goes before OnMissionStartTerrain was called.
+  if (Length(BH_MapTilesInfo) = 0) then
+  begin
+    exit;
+  end;
   BH_MapTilesInfo[x][y].RoadTileType := RTT_Road;
 
   connectionType := BH_GetBestNeighborConnection(x,y);
