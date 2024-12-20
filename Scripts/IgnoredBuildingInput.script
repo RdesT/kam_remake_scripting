@@ -47,7 +47,7 @@ begin
   begin
     if (IBI_NoRoadsPlayers[i] = playerId) then
     begin
-      U.ArrayRemoveIndexI(i, IBI_NoRoadsPlayers);
+      IBI_NoRoadsPlayers := U.ArrayRemoveIndexI(i, IBI_NoRoadsPlayers);
       break;
     end;
   end;
@@ -62,7 +62,7 @@ begin
   begin
     if (IBI_NoFieldsPlayers[i] = playerId) then
     begin
-      U.ArrayRemoveIndexI(i, IBI_NoFieldsPlayers);
+      IBI_NoFieldsPlayers := U.ArrayRemoveIndexI(i, IBI_NoFieldsPlayers);
       break;
     end;
   end;
@@ -77,7 +77,7 @@ begin
   begin
     if (IBI_NoWinePlayers[i] = playerId) then
     begin
-      U.ArrayRemoveIndexI(i, IBI_NoWinePlayers);
+      IBI_NoWinePlayers := U.ArrayRemoveIndexI(i, IBI_NoWinePlayers);
       break;
     end;
   end;
