@@ -33,7 +33,8 @@ begin
     exit;
   end;
 
-  case buildings.Woodcutters of
+  //If there is cut only woodcutter, we should replace it. But not more then 1 or it's too many woodcutters to build. If player has more then 1 we will offer him to make more after he destroys some.
+  case buildings.Woodcutters - U.IfThenI(Length(player.CutOnlyWoodcutters) > 0, 1, 0) of
     4,5,6,7:
       begin
 

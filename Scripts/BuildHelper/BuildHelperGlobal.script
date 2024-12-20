@@ -123,6 +123,8 @@ record
   BuildingStrategy: BH_BuildingStrategy;
   FirstFarmTime: integer;
 
+  CutOnlyWoodcutters: TIntegerArray;
+
   PossibleIronMinesCount: integer;
   PossibleGoldMinesCount: integer;
   PossibleFishermansCount: integer;

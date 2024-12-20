@@ -155,7 +155,7 @@ end;
 function BH_Default35_AddStartingWoodcutters(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
 var
   needToBuild: integer;
-
+  count: integer;
 begin
 
   result := addedBuildings;
@@ -177,7 +177,10 @@ begin
 
   //TODO count starting wood and trees.
 
-  case buildings.Woodcutters of
+  count := buildings.Woodcutters - U.IfThenI(Length(player.CutOnlyWoodcutters) > 0, 1, 0);
+
+  //If there is cut only woodcutter, we should replace it. But not more then 1 or it's too many woodcutters to build. If player has more then 1 we will offer him to make more after he destroys some.
+  case count of
     0,1,2,3,4,5:
       begin
 
@@ -208,7 +211,7 @@ begin
           Inc(needToBuild);
         end;
 
-        result := BH_AddMultipleBuildingInfo(result, htWoodcutters, needToBuild - buildings.Woodcutters, maxBuildingsCount);
+        result := BH_AddMultipleBuildingInfo(result, htWoodcutters, needToBuild - count, maxBuildingsCount);
       end;
   end;
 end;
@@ -216,6 +219,7 @@ end;
 function BH_Default35_AddAdditionalWoodcutters(addedBuildings: array of BH_BuildingInfo; buildings: BH_BuildingsCountInfo; player: BH_Player; maxBuildingsCount: integer; planning: boolean): array of BH_BuildingInfo;
 var
   needToBuild: integer;
+  count: integer;
 
 begin
 
@@ -226,7 +230,9 @@ begin
     exit;
   end;
 
-  case buildings.Woodcutters of
+  count := buildings.Woodcutters - U.IfThenI(Length(player.CutOnlyWoodcutters) > 0, 1, 0);
+
+  case count of
     6,7:
       begin
 
@@ -240,7 +246,7 @@ begin
           Inc(needToBuild);
         end;
 
-        result := BH_AddMultipleBuildingInfo(result, htWoodcutters, needToBuild - buildings.Woodcutters + 6, maxBuildingsCount);
+        result := BH_AddMultipleBuildingInfo(result, htWoodcutters, needToBuild - count + 6, maxBuildingsCount);
       end;
     else
       begin

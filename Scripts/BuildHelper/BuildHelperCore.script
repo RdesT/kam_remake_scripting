@@ -8,6 +8,7 @@
 {$EVENT evtHouseBuilt:BH_OnHouseBuiltCore}
 {$EVENT evtHouseDestroyed:BH_OnHouseDestroyedCore}
 {$EVENT evtMissionStart:BH_OnMissionStartCore}
+{$EVENT evtWoodcuttersModeChanged:BH_OnWoodcuttersModeChanged}
 
 {$COMMAND DebugFlag:BH_SwitchDebugFlag}
 
@@ -1096,6 +1097,36 @@ end;
 //EVENTS.
 //----------------------------------------------------------------------------------------------------------------------------------------------------
 
+procedure BH_OnWoodcuttersModeChanged(aHouse: Integer; aOldMode: TKMWoodcutterMode; aNewMode: TKMWoodcutterMode);
+var
+  i: integer;
+  index: integer;
+begin
+  index := BH_FindPlayerIndex(S.HouseOwner(aHouse));
+  if (index = -1) then
+  begin
+    exit;
+  end;
+
+  if (aNewMode = wmChop) then
+  begin
+    SetLength(BH_Players[index].CutOnlyWoodcutters, Length(BH_Players[index].CutOnlyWoodcutters) + 1);
+    BH_Players[index].CutOnlyWoodcutters[High(BH_Players[index].CutOnlyWoodcutters)] := aHouse;
+
+  end else
+  if (aOldMode = wmChop) then
+  begin
+    for i:= 0 to High(BH_Players[index].CutOnlyWoodcutters) do
+    begin
+      if (BH_Players[index].CutOnlyWoodcutters[i] = aHouse)then
+      begin
+        BH_Players[index].CutOnlyWoodcutters := U.ArrayRemoveIndexI(i, BH_Players[index].CutOnlyWoodcutters);
+        exit;
+      end;
+    end;
+  end;
+end;
+
 procedure BH_OnHouseBuiltCore(aHouse: integer);
 var
   index: integer;
@@ -1177,6 +1208,14 @@ begin
         foodAmount := S.HouseWareAmount(ids[i], wtFish) * BH_Fish + foodAmount;
         foodAmount := S.HouseWareAmount(ids[i], wtBread) * BH_Bread + foodAmount;
         foodAmount := S.HouseWareAmount(ids[i], wtWine) * BH_Wine + foodAmount;
+      end else
+      if (S.HouseTypeEx(ids[i]) = htWoodCutters) then
+      begin
+        if (S.HouseWoodcutterMode(ids[i]) = wmChop) then
+        begin
+          SetLength(BH_Players[index].CutOnlyWoodcutters, Length(BH_Players[index].CutOnlyWoodcutters) + 1);
+          BH_Players[index].CutOnlyWoodcutters[High(BH_Players[index].CutOnlyWoodcutters)] := ids[i];
+        end;
       end;
 
       BH_UpdatePlayerMinesInfo(playerId, S.HousePosition(ids[i]));
