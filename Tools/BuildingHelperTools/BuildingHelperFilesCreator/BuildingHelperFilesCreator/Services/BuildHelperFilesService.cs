@@ -138,8 +138,7 @@ namespace BuildingHelperFilesCreator.Services
 
 				if (includeLine != null && !includeLine.Any())
 				{
-					var currentContent = File.ReadAllText(filePath);
-					File.WriteAllText(filePath, "{$INCLUDE BuildHelper.script}\n" + currentContent);
+					File.AppendAllText(filePath, "\n{$INCLUDE BuildHelper.script}\n");
 				}
 			}
 			else
