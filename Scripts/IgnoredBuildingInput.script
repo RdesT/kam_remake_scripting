@@ -1,0 +1,113 @@
+{$EVENT evtPlanRoadPlaced:IBI_OnPlanRoadPlaced}
+{$EVENT evtPlanFieldPlaced:IBI_OnPlanFieldPlaced}
+{$EVENT evtPlanWinefieldPlaced:IBI_OnPlanWinefieldPlaced}
+
+var
+  IBI_NoRoadsPlayers: TIntegerArray;
+  IBI_NoFieldsPlayers: TIntegerArray;
+  IBI_NoWinePlayers: TIntegerArray;
+
+//Adding.
+
+procedure IBI_AddNoRoadPlayer(playerId: integer);
+begin
+  if (not U.ArrayHasElementI(playerId, IBI_NoRoadsPlayers)) then
+  begin
+    SetLength(IBI_NoRoadsPlayers, Length(IBI_NoRoadsPlayers) + 1);
+    IBI_NoRoadsPlayers[High(IBI_NoRoadsPlayers)] := playerId;
+  end;
+end;
+
+procedure IBI_AddNoFieldsPlayer(playerId: integer);
+begin
+  if (not U.ArrayHasElementI(playerId, IBI_NoFieldsPlayers)) then
+  begin
+    SetLength(IBI_NoFieldsPlayers, Length(IBI_NoFieldsPlayers) + 1);
+    IBI_NoFieldsPlayers[High(IBI_NoFieldsPlayers)] := playerId;
+  end;
+end;
+
+procedure IBI_AddNoWinePlayer(playerId: integer);
+begin
+  if (not U.ArrayHasElementI(playerId, IBI_NoWinePlayers)) then
+  begin
+    SetLength(IBI_NoWinePlayers, Length(IBI_NoWinePlayers) + 1);
+    IBI_NoWinePlayers[High(IBI_NoWinePlayers)] := playerId;
+  end;
+end;
+
+//Removing.
+
+procedure IBI_RemoveNoRoadPlayer(playerId: integer);
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(IBI_NoRoadsPlayers) do
+  begin
+    if (IBI_NoRoadsPlayers[i] = playerId) then
+    begin
+      U.ArrayRemoveIndexI(i, IBI_NoRoadsPlayers);
+      break;
+    end;
+  end;
+end;
+
+procedure IBI_RemoveNoFieldPlayer(playerId: integer);
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(IBI_NoFieldsPlayers) do
+  begin
+    if (IBI_NoFieldsPlayers[i] = playerId) then
+    begin
+      U.ArrayRemoveIndexI(i, IBI_NoFieldsPlayers);
+      break;
+    end;
+  end;
+end;
+
+procedure IBI_RemoveNoWinePlayer(playerId: integer);
+var
+  i: integer;
+begin
+
+  for i:= 0 to High(IBI_NoWinePlayers) do
+  begin
+    if (IBI_NoWinePlayers[i] = playerId) then
+    begin
+      U.ArrayRemoveIndexI(i, IBI_NoWinePlayers);
+      break;
+    end;
+  end;
+end;
+
+//Events.
+
+procedure IBI_OnPlanRoadPlaced(aPlayer: Integer; aX, aY: Integer);
+begin
+  if (U.ArrayHasElementI(aPlayer, IBI_NoRoadsPlayers)) then
+  begin
+    A.PlanRemove(aPlayer, aX, aY);
+  end;
+end;
+
+procedure IBI_OnPlanFieldPlaced(aPlayer: Integer; aX, aY: Integer);
+begin
+  if (U.ArrayHasElementI(aPlayer, IBI_NoFieldsPlayers)) then
+  begin
+    A.PlanRemove(aPlayer, aX, aY);
+  end;
+end;
+
+procedure IBI_OnPlanWinefieldPlaced(aPlayer: Integer; aX, aY: Integer);
+begin
+  if (U.ArrayHasElementI(aPlayer, IBI_NoWinePlayers)) then
+  begin
+    A.PlanRemove(aPlayer, aX, aY);
+  end;
+end;
+
+
+
