@@ -98,20 +98,76 @@ type
 	TDirection = array[0..MAX_COORDS - 1] of TCoordinate;
 	TSpawnPoints = array[0..NUM_DIRECTIONS - 1] of TDirection;
 
+type tMetallurgists = record
+	Id: Integer;
+	BonusChestCount: Integer;
+end;
+
 var
-	TowerQuestActive, CastleQuestActive, TownQuest1, TownQuest2, TownQuest3, TownQuest4, TownQuest5, TownQuest6, TownQuest7, TownQuest8, TownQuest9, TownQuest10, TownQuest11, TownQuest12, TownQuest13 : boolean;
+	TowerQuestActive, CastleQuestActive, OnWareProducedBlocked: boolean;
 	EnemyUnitsKilled, NextWaveDirection, ZombiePlayerID, TowerKills,  TowerRegenStoneLevel, InstaKillLevel, InstaKillCount, AutoLureLevel, RebelUpgradeLevel, GoldDuplicateChance, RReward, PLAYER_9  : Integer;
 	SpawnPoints: TSpawnPoints;
-    PlayerTowers: array of Integer;
+
+	VillageQuestPlayers: TIntegerArray;
+
+	PlayerTowers: array of Integer;
+	PlayerMetallurgists: array of tMetallurgists;
 	
 type tCoordinates = record
-    X: Integer;
-    Y: Integer;
+	X: Integer;
+	Y: Integer;
 end;
 
 type tBorders = record
-    Head: Integer;
-    Tail: Integer;
+	Head: Integer;
+	Tail: Integer;
+end;
+
+function FindPlayerMetallurgistsIndex(houseId: integer): integer;
+var
+	i: integer;
+begin
+
+	result := -1;
+	
+	for i:= 0 to High(PlayerMetallurgists)do
+	begin
+		if (PlayerMetallurgists[i].Id = houseId) then
+		begin
+			result := i;
+			exit;		
+		end;
+	end;
+end;
+
+procedure AddPlayerMetallurgists(houseId: integer);
+begin
+	SetLength(PlayerMetallurgists, Length(PlayerMetallurgists) + 1);
+	PlayerMetallurgists[High(PlayerMetallurgists)].Id := houseId;
+	PlayerMetallurgists[High(PlayerMetallurgists)].BonusChestCount := 0;
+end;
+
+procedure RemovePlayerMetallurgists(houseId: integer);
+var
+	i: integer;
+begin
+
+	for i:= 0 to High(PlayerMetallurgists)do
+	begin
+		if (PlayerMetallurgists[i].Id = houseId) then
+		begin
+			PlayerMetallurgists[i].Id := PlayerMetallurgists[High(PlayerMetallurgists)].Id;
+			PlayerMetallurgists[i].BonusChestCount := PlayerMetallurgists[High(PlayerMetallurgists)].BonusChestCount;			
+			SetLength(PlayerMetallurgists, Length(PlayerMetallurgists) - 1);
+			exit;		
+		end;
+	end;	
+end;
+
+procedure AddVillageQuestPlayer(playerId: integer);
+begin
+	SetLength(VillageQuestPlayers, Length(VillageQuestPlayers) + 1);
+	VillageQuestPlayers[High(VillageQuestPlayers)] := playerId;
 end;
 
 // SpawnUnitsInZone(P, U, 1, 1, States.MapWidth - 1, States.MapHeight - 1, MMinX, MMinY, MMaxX, MMaxY);
@@ -119,14 +175,14 @@ procedure SpawnUnitsInZone(P, unitType, oMinX, oMinY, oMaxX, oMaxY, iMinX, iMinY
 var ResultCoords: tCoordinates;
 var OuterBordersX, InnerBordersX, OuterBordersY, InnerBordersY: tBorders;
 begin
-    OuterBordersX.Head := oMinX; 
-    OuterBordersX.Tail := oMaxX;
-    InnerBordersX.Head := iMinX;
-    InnerBordersX.Tail := iMaxX;
-    OuterBordersY.Head := oMinY;
-    OuterBordersY.Tail := oMaxY;
-    InnerBordersY.Head := iMinY;
-    InnerBordersY.Tail := iMaxY;
+	OuterBordersX.Head := oMinX; 
+	OuterBordersX.Tail := oMaxX;
+	InnerBordersX.Head := iMinX;
+	InnerBordersX.Tail := iMaxX;
+	OuterBordersY.Head := oMinY;
+	OuterBordersY.Tail := oMaxY;
+	InnerBordersY.Head := iMinY;
+	InnerBordersY.Tail := iMaxY;
 	(*case States.KamRandomI(3) of
 		0: //top left part
 		begin
@@ -154,36 +210,36 @@ begin
 	
 	
 	if States.KamRandomI(2) = 0 then
-    begin
-        // top/bottom - only middle part
-        ResultCoords.Y := States.KamRandomI(OuterBordersY.Tail-OuterBordersY.Head+InnerBordersY.Head-InnerBordersY.Tail-1) + OuterBordersY.Head+1;
-        if (ResultCoords.Y > InnerBordersY.Head) then
-            ResultCoords.Y := ResultCoords.Y - InnerBordersY.Head + InnerBordersY.Tail;
+	begin
+		// top/bottom - only middle part
+		ResultCoords.Y := States.KamRandomI(OuterBordersY.Tail-OuterBordersY.Head+InnerBordersY.Head-InnerBordersY.Tail-1) + OuterBordersY.Head+1;
+		if (ResultCoords.Y > InnerBordersY.Head) then
+			ResultCoords.Y := ResultCoords.Y - InnerBordersY.Head + InnerBordersY.Tail;
 			ResultCoords.X := States.KamRandomI(InnerBordersX.Tail-InnerBordersX.Head-1) + InnerBordersX.Head+1;
-    end
-    else
-    begin 
-        // left/right, with its top/bottom parts
-        ResultCoords.X := States.KamRandomI(OuterBordersX.Tail-OuterBordersX.Head+InnerBordersX.Head-InnerBordersX.Tail-1) + OuterBordersX.Head+1;
-        if (ResultCoords.X > InnerBordersX.Head) then
-            ResultCoords.X := ResultCoords.X - InnerBordersX.Head + InnerBordersX.Tail;
+	end
+	else
+	begin 
+		// left/right, with its top/bottom parts
+		ResultCoords.X := States.KamRandomI(OuterBordersX.Tail-OuterBordersX.Head+InnerBordersX.Head-InnerBordersX.Tail-1) + OuterBordersX.Head+1;
+		if (ResultCoords.X > InnerBordersX.Head) then
+			ResultCoords.X := ResultCoords.X - InnerBordersX.Head + InnerBordersX.Tail;
 			ResultCoords.Y := States.KamRandomI(OuterBordersY.Tail-OuterBordersY.Head-1) + OuterBordersY.Head+1;
-    end;
-    // TODO: fix this function to check if tile where we try to spawn is walkable
-    // this requires States.MapTilePassability from the beta!
-    // if States.MapTilePassability(ResultCoords.X, ResultCoords.Y, tpWalk) = True ...
-    Actions.GiveGroup(P,unitType,ResultCoords.X,ResultCoords.Y,States.KamRandomI(7),States.KamRandomI(5)+1,2);
+	end;
+	// TODO: fix this function to check if tile where we try to spawn is walkable
+	// this requires States.MapTilePassability from the beta!
+	// if States.MapTilePassability(ResultCoords.X, ResultCoords.Y, tpWalk) = True ...
+	Actions.GiveGroup(P,unitType,ResultCoords.X,ResultCoords.Y,States.KamRandomI(7),States.KamRandomI(5)+1,2);
 end;
 
 // Set difficulty multiplier
 function DifficultyMultiplier() : Single;
 begin
 	case States.MissionDifficulty() of
-    mdEasy1:
+	mdEasy1:
 		Result := 1.25; // scaling factor for easy difficulty
-    mdNormal:
+	mdNormal:
 		Result := 1.0; // scaling for normal difficulty
-    mdHard1:
+	mdHard1:
 		Result := 0.75; // scaling factor for hard difficulty
 	end;
 end;	
@@ -203,145 +259,145 @@ begin
 	if States.Gametime > (Round(36000 * DifficultyMultiplier())) then						//after 1 hour leather units
 	begin
 		case States.KamRandomI(9) of		
-            0,1,2: Result := UT_AXE_FIGHTER; 			//Axe Fighter 3/9
-            3,4,5: Result := UT_LANCE_CARRIER; 			//Lance Carrier 3/9
-            6: 	   Result := UT_BOWMAN; 				//Bowman 1/9
-            7: 	   Result := UT_BARBARIAN; 				//Barbarian 1/9
+			0,1,2: Result := UT_AXE_FIGHTER; 			//Axe Fighter 3/9
+			3,4,5: Result := UT_LANCE_CARRIER; 			//Lance Carrier 3/9
+			6: 	   Result := UT_BOWMAN; 				//Bowman 1/9
+			7: 	   Result := UT_BARBARIAN; 				//Barbarian 1/9
 			8: 	   Result := UT_SCOUT;					//scout 1/9				
-        end;	
+		end;	
 	end;
 	if States.Gametime > (Round(72000 * DifficultyMultiplier())) then						//after 2 hours iron units
 	begin
-	    case States.KamRandomI(11) of	
-            0,1,2: Result := UT_SWORD_FIGHTER; 			//Swordman
-            3,4,5: Result := UT_PIKEMAN; 				//Pikes
-            6,7,8: Result := UT_KNIGHT; 				//Knights
-            9: 	   Result := UT_CROSSBOWMAN;			//xbow
-            10:    Result := UT_WARRIOR; 				//Metal-Barb
-        end;
+		case States.KamRandomI(11) of	
+			0,1,2: Result := UT_SWORD_FIGHTER; 			//Swordman
+			3,4,5: Result := UT_PIKEMAN; 				//Pikes
+			6,7,8: Result := UT_KNIGHT; 				//Knights
+			9: 	   Result := UT_CROSSBOWMAN;			//xbow
+			10:    Result := UT_WARRIOR; 				//Metal-Barb
+		end;
 	end;
 end;
 procedure InstakillUpgrade;
 begin
 	// check if new level is possible
-    if InstaKillLevel < 3 then
-    begin
-        Inc(InstaKillLevel); // Upgrade-Level
-        Actions.ShowMsg(PLAYER_1, 'Insta Kill upgraded to level ' + IntToStr(InstaKillLevel) + '!');
+	if InstaKillLevel < 3 then
+	begin
+		Inc(InstaKillLevel); // Upgrade-Level
+		Actions.ShowMsg(PLAYER_1, 'Insta Kill upgraded to level ' + IntToStr(InstaKillLevel) + '!');
 		EnemyUnitsKilled := EnemyUnitsKilled - 1;
 		// max upgrade achieved -> block barb from being trained (so player isnt confused)
 		if InstaKillLevel >= 3 then
 		begin
 			Actions.UnitBlock(PLAYER_1, UT_BARBARIAN, true);
 		end;
-    end;
+	end;
 end;
 
 procedure GrantTowerRegenUpgrade;
 begin
-    // check if new level is possible
-    if TowerRegenStoneLevel < 3 then
-    begin
-        Inc(TowerRegenStoneLevel); // Upgrade-Level 
-        Actions.ShowMsg(PLAYER_1, 'Tower stone regeneration upgraded to level ' + IntToStr(TowerRegenStoneLevel) + '!');
+	// check if new level is possible
+	if TowerRegenStoneLevel < 3 then
+	begin
+		Inc(TowerRegenStoneLevel); // Upgrade-Level 
+		Actions.ShowMsg(PLAYER_1, 'Tower stone regeneration upgraded to level ' + IntToStr(TowerRegenStoneLevel) + '!');
 		EnemyUnitsKilled := EnemyUnitsKilled - 1;
 		// max upgrade achieved -> block rogue from being trained (so player isnt confused)
 		if TowerRegenStoneLevel >= 3 then
 		begin
 			Actions.UnitBlock(PLAYER_1, UT_ROGUE, true);
 		end;
-    end;
+	end;
 end;
 
 procedure RegenerateTowerStones;
 var
-    PlayerTowers: array of Integer;
-    TowerID, i, RegenInterval: Integer;
+	PlayerTowers: array of Integer;
+	TowerID, i, RegenInterval: Integer;
 begin
-    // Regeneration-interval based on upgrade-level
-    RegenInterval := 0;
-    case TowerRegenStoneLevel of
-        1: RegenInterval := 130; // 14 seconds
-        2: RegenInterval := 100; // 12 seconds
-        3: RegenInterval := 70; // 10 seconds
-    end;
+	// Regeneration-interval based on upgrade-level
+	RegenInterval := 0;
+	case TowerRegenStoneLevel of
+		1: RegenInterval := 130; // 14 seconds
+		2: RegenInterval := 100; // 12 seconds
+		3: RegenInterval := 70; // 10 seconds
+	end;
 
-    // if no upgrade active, do nothing 
-    if RegenInterval = 0 then Exit;
+	// if no upgrade active, do nothing 
+	if RegenInterval = 0 then Exit;
 	
-    // get all towers from player1
-    PlayerTowers := States.PlayerGetAllHouses(PLAYER_1);
-    for i := 0 to High(PlayerTowers) do
-    begin
-        TowerID := PlayerTowers[i];
-        if (States.HouseType(TowerID) = HT_WATCHTOWER) and (States.HouseWareAmount(TowerID, WT_STONES) < 5) then
-        begin
+	// get all towers from player1
+	PlayerTowers := States.PlayerGetAllHouses(PLAYER_1);
+	for i := 0 to High(PlayerTowers) do
+	begin
+		TowerID := PlayerTowers[i];
+		if (States.HouseType(TowerID) = HT_WATCHTOWER) and (States.HouseWareAmount(TowerID, WT_STONES) < 5) then
+		begin
 			// set delivermode to blocked, so serfs cant bring stone to towers anymore
 			Actions.HouseDeliveryBlock(TowerID, true);
-            if (States.GameTime mod RegenInterval = 0) then
-            begin
-                Actions.HouseAddWaresTo(TowerID, WT_STONES, 1); // add one stone
-            end;
-        end;
-    end;
+			if (States.GameTime mod RegenInterval = 0) then
+			begin
+				Actions.HouseAddWaresTo(TowerID, WT_STONES, 1); // add one stone
+			end;
+		end;
+	end;
 end;
 
 procedure GrantAutoLureUpgrade;
 begin
-    // check if new level is possible
-    if AutoLureLevel < 3 then
-    begin
-        Inc(AutoLureLevel); // Upgrade-Level 
-        Actions.ShowMsg(PLAYER_1, 'Auto Lure upgraded to level ' + IntToStr(AutoLureLevel) + '!');
+	// check if new level is possible
+	if AutoLureLevel < 3 then
+	begin
+		Inc(AutoLureLevel); // Upgrade-Level 
+		Actions.ShowMsg(PLAYER_1, 'Auto Lure upgraded to level ' + IntToStr(AutoLureLevel) + '!');
 		// max upgrade achieved -> block vagabond from being trained (so player isnt confused)
 		if AutoLureLevel >= 3 then
 		begin
 			Actions.UnitBlock(PLAYER_1, UT_VAGABOND, true);
 		end;
-    end;
+	end;
 end;
 
 procedure TowerLureEnemies;
 var
-    i, enemyGroup, x, y, Radius, TowerID: Integer;
-    GroupUnits: array of Integer;
-    UnitID, UnitX, UnitY, FlagUnit: Integer;
+	i, enemyGroup, x, y, Radius, TowerID: Integer;
+	GroupUnits: array of Integer;
+	UnitID, UnitX, UnitY, FlagUnit: Integer;
 begin
-    if AutoLureLevel = 0 then Exit;
+	if AutoLureLevel = 0 then Exit;
 
-    Radius := 0;
-    case AutoLureLevel of
-        1: Radius := 25; 
-        2: Radius := 30; 
-        3: Radius := 40; 
-    end;
+	Radius := 0;
+	case AutoLureLevel of
+		1: Radius := 25; 
+		2: Radius := 30; 
+		3: Radius := 40; 
+	end;
 
-    for i := 0 to Length(PlayerTowers) - 1 do  
-    begin
-        TowerID := PlayerTowers[i];
-        if (States.HouseType(TowerID) = HT_WATCHTOWER) then
-        begin
-            x := States.HousePositionX(TowerID);
-            y := States.HousePositionY(TowerID);
+	for i := 0 to Length(PlayerTowers) - 1 do  
+	begin
+		TowerID := PlayerTowers[i];
+		if (States.HouseType(TowerID) = HT_WATCHTOWER) then
+		begin
+			x := States.HousePositionX(TowerID);
+			y := States.HousePositionY(TowerID);
 			Actions.FogRevealCircle(PLAYER_1, x, y, Radius);
-            enemyGroup := States.ClosestGroup(PLAYER_9, x, y, -1); 
+			enemyGroup := States.ClosestGroup(PLAYER_9, x, y, -1); 
 			FlagUnit := States.GroupMember(enemyGroup, 0);
-            if (abs(States.UnitPositionX(FlagUnit) - x) < Radius) and (abs(States.UnitPositionY(FlagUnit) - y) < Radius) then
-            begin
+			if (abs(States.UnitPositionX(FlagUnit) - x) < Radius) and (abs(States.UnitPositionY(FlagUnit) - y) < Radius) then
+			begin
 				if enemyGroup <> -1 then 
 					Actions.GroupOrderAttackHouse(enemyGroup, TowerID);  
 			end;
-        end;
-    end;
+		end;
+	end;
 end;
 
 procedure UpgradeGoldDuplication;
 begin
-    case RebelUpgradeLevel of
-        1: GoldDuplicateChance := 30; 
-        2: GoldDuplicateChance := 40; 
-        3: GoldDuplicateChance := 50;
-    end;
+	case RebelUpgradeLevel of
+		1: GoldDuplicateChance := 30; 
+		2: GoldDuplicateChance := 40; 
+		3: GoldDuplicateChance := 50;
+	end;
 	if RebelUpgradeLevel >= 3 then
 	begin	
 		Actions.UnitBlock(PLAYER_1, UT_REBEL, true);
@@ -368,25 +424,25 @@ end;
 
 procedure AddTowerToArray(TowerID: Integer);
 begin
-    SetLength(PlayerTowers, Length(PlayerTowers) + 1);
-    PlayerTowers[High(PlayerTowers)] := TowerID;
+	SetLength(PlayerTowers, Length(PlayerTowers) + 1);
+	PlayerTowers[High(PlayerTowers)] := TowerID;
 end;
 
 procedure RemoveTowerFromArray(TowerID: Integer);
 var
-    i, j: Integer;
-    NewArray: array of Integer;
+	i, j: Integer;
+	NewArray: array of Integer;
 begin
-    SetLength(NewArray, 0);
-    for i := 0 to High(PlayerTowers) do
-    begin
-        if PlayerTowers[i] <> TowerID then
-        begin
-            SetLength(NewArray, Length(NewArray) + 1);
-            NewArray[High(NewArray)] := PlayerTowers[i];
-        end;
-    end;
-    PlayerTowers := NewArray;
+	SetLength(NewArray, 0);
+	for i := 0 to High(PlayerTowers) do
+	begin
+		if PlayerTowers[i] <> TowerID then
+		begin
+			SetLength(NewArray, Length(NewArray) + 1);
+			NewArray[High(NewArray)] := PlayerTowers[i];
+		end;
+	end;
+	PlayerTowers := NewArray;
 end;
 
 procedure UpdateOverlay(PlayerID: Byte);
@@ -432,45 +488,34 @@ begin
 		end;	
 end;
 
+procedure GiveRewardWeapons(player, wareType, count: integer);
+begin
+	if (States.StatHouseTypeCountEx(player, htBarracks) > 0) then
+	begin
+		Actions.GiveWeapons(player, wareType, count);
+  	end else
+  	begin
+			Actions.GiveWares(player, wareType, count);
+  	end;
+end;
+
 // randomly pick a reward
 procedure GiveReward;
-var
-    i : integer;
-    PlayerAllHouses : array of integer;
-    waresGiven: boolean;
 begin
-    PlayerAllHouses := States.PlayerGetAllHouses(PLAYER_1);
-    case States.KamRandomI(6) of
-        0:
-        begin    
-            // Give 15 xbows
-            Actions.GiveGroup(PLAYER_1, UT_CROSSBOWMAN, 126, 139, DIR_DOWN, 15, 3);
-                 
-            for i := 0 to High(PlayerAllHouses) do
-            begin
-                if PlayerAllHouses[i] = HT_BARRACKS then
-                begin
-                    // Give 15 pike-sets
-                    Actions.GiveWeapons(PLAYER_1, WT_IRON_ARMOR, 15);
-                    Actions.GiveWeapons(PLAYER_1, WT_PIKES, 15);
-                    waresGiven := true;
-                end;
-            end;
+	case States.KamRandomI(6) of
+		0:
+			begin
+			// Give 15 xbows
+			Actions.GiveGroup(PLAYER_1, UT_CROSSBOWMAN, 126, 139, DIR_DOWN, 15, 3);
 
-            //If we didn't find any barracks.
-            if (not waresGiven) then
-            begin
-               // Give 15 pike-sets to storehouse if no barracks is built
-               Actions.GiveWares(PLAYER_1, WT_IRON_ARMOR, 15);
-               Actions.GiveWares(PLAYER_1, WT_PIKES, 15);
-			   waresGiven := true;
-            end;
+			GiveRewardWeapons(PLAYER_1, WT_IRON_ARMOR, 15);
+			GiveRewardWeapons(PLAYER_1, WT_PIKES, 15);
 
-            // Give 20 goldchests
-            Actions.GiveWares(PLAYER_1, WT_GOLD, 35);    
-            // Message
-            Actions.ShowMsg(-1, RewardMsg);            
-        end;
+			// Give 35 goldchests
+			Actions.GiveWares(PLAYER_1, WT_GOLD, 35);
+			// Message
+			Actions.ShowMsg(-1, RewardMsg);
+		end;
 		1:
 		begin
 			// Give 60 fish
@@ -481,7 +526,7 @@ begin
 			Actions.GiveWares(PLAYER_1, WT_IRON_ORE, 20);
 			// Give 15 axe fighters
 			Actions.GiveGroup(PLAYER_1, UT_AXE_FIGHTER, 126, 139, DIR_DOWN, 15, 3);
-			// Give 50 goldchests
+			// Give 65 goldchests
 			Actions.GiveWares(PLAYER_1, WT_GOLD, 65);
 			
 			// Message
@@ -489,54 +534,21 @@ begin
 		end;
 		2:
 		begin
-			for i := 0 to High(PlayerAllHouses) do
-			begin
-				if (States.StatHouseTypeCountEx(PLAYER_1, htBarracks) > 0) then
-				begin
-					// Give 20 swordman-sets to barracks
-					Actions.GiveWeapons(PLAYER_1, WT_SWORDS		,20);
-					Actions.GiveWeapons(PLAYER_1, WT_IRON_ARMOR	,20);
-					Actions.GiveWeapons(PLAYER_1, WT_IRON_SHIELD	,20);
-					waresGiven := true;
-				end;
-				//If we didn't find any barracks.
-				if (not waresGiven) then
-				begin
-					// Give 20 swordman-sets to warehouse
-					Actions.GiveWares(PLAYER_1, WT_SWORDS		,20);
-					Actions.GiveWares(PLAYER_1, WT_IRON_ARMOR	,20);
-					Actions.GiveWares(PLAYER_1, WT_IRON_SHIELD	,20);
-					waresGiven := true;
-				end;
-			end;
-			
+	  GiveRewardWeapons(PLAYER_1, WT_SWORDS, 20);
+			GiveRewardWeapons(PLAYER_1, WT_IRON_ARMOR, 20);
+			GiveRewardWeapons(PLAYER_1, WT_IRON_SHIELD, 20);
+
 			// Message
 			Actions.ShowMsg(-1, RewardMsg);
 		end;
 		3:
 		begin
-			for i := 0 to High(PlayerAllHouses) do
-			begin
-				if (States.StatHouseTypeCountEx(PLAYER_1, htBarracks) > 0) then
-				begin
-					// Give 20 pike-sets to barracks
-					Actions.GiveWeapons(PLAYER_1, WT_Pikes		,20);
-					Actions.GiveWeapons(PLAYER_1, WT_IRON_ARMOR	,20);
-					waresGiven := true;
-				end;
-				//If we didn't find any barracks.
-				if (not waresGiven) then
-				begin
-					// Give 20 pike-sets to storehouse
-					Actions.GiveWares(PLAYER_1, WT_Pikes		,20);
-					Actions.GiveWares(PLAYER_1, WT_IRON_ARMOR	,20);
-					waresGiven := true;
-				end;
-			end;			
+	  GiveRewardWeapons(PLAYER_1, WT_Pikes		,20);
+			GiveRewardWeapons(PLAYER_1, WT_IRON_ARMOR	,20);
 
 			// Give 20 coal
 			Actions.GiveWares(PLAYER_1, WT_COAL ,20);
-			// Give 20 goldchests
+			// Give 35 goldchests
 			Actions.GiveWares(PLAYER_1, WT_GOLD, 35);
 		
 			// Message
@@ -544,28 +556,12 @@ begin
 		end;
 		4:
 		begin	
-			for i := 0 to High(PlayerAllHouses) do
-			begin
-				if (States.StatHouseTypeCountEx(PLAYER_1, htBarracks) > 0) then
-				begin
-					// Give 20 xbow-sets to barracks
-					Actions.GiveWeapons(PLAYER_1, WT_CROSSBOWS	,20);
-					Actions.GiveWeapons(PLAYER_1, WT_IRON_ARMOR	,20);
-					waresGiven := true;
-				end;
-				//If we didn't find any barracks.
-				if (not waresGiven) then
-				begin
-					// Give 20 xbow-sets to storehouse
-					Actions.GiveWares(PLAYER_1, WT_CROSSBOWS	,20);
-					Actions.GiveWares(PLAYER_1, WT_IRON_ARMOR	,20);
-					waresGiven := true;
-				end;
-			end;			
+	  GiveRewardWeapons(PLAYER_1, WT_CROSSBOWS, 20);
+			GiveRewardWeapons(PLAYER_1, WT_IRON_ARMOR, 20);
 
 			// Give 20 coal
-			Actions.GiveWares(PLAYER_1, WT_COAL			,20);
-			// Give 20 goldchests
+			Actions.GiveWares(PLAYER_1, WT_COAL, 20);
+			// Give 35 goldchests
 			Actions.GiveWares(PLAYER_1, WT_GOLD, 35);
 		
 			// Message
@@ -581,7 +577,6 @@ begin
 			Actions.GiveWares(PLAYER_1, WT_SAUSAGES, 25);
 			// Give 20 goldchests
 			Actions.GiveWares(PLAYER_1, WT_GOLD, 35);
-			
 			// Message
 			Actions.ShowMsg(-1, RewardMsg);
 		end;
@@ -612,61 +607,61 @@ end;
 
 procedure SpawnWave(Direction, WaveNumber: Integer);
 var
-    NumGroupsToSpawn, GroupIndex, CoordIndex, SelectedX, SelectedY, NumGroupsBase, UnitIdk : Integer;
+	NumGroupsToSpawn, GroupIndex, CoordIndex, SelectedX, SelectedY, NumGroupsBase, UnitIdk : Integer;
 begin
-    if (Direction < 0) or (Direction >= NUM_DIRECTIONS) then
-        Exit;
+	if (Direction < 0) or (Direction >= NUM_DIRECTIONS) then
+		Exit;
 
-    // Calculate the number of groups to spawn based on the wave number						
-    NumGroupsBase := 5;	// Base number of groups in each wave
-    NumGroupsToSpawn := (NumGroupsBase * GameTimeMultiplier()) + (WaveNumber * 3); // calculation for the numbers per wave
+	// Calculate the number of groups to spawn based on the wave number						
+	NumGroupsBase := 5;	// Base number of groups in each wave
+	NumGroupsToSpawn := (NumGroupsBase * GameTimeMultiplier()) + (WaveNumber * 3); // calculation for the numbers per wave
 
-    // Define spawn points for each direction
-    for CoordIndex := 0 to MAX_COORDS - 1 do
-    begin
-        case Direction of
-            0: begin // Top
-                SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
-                SpawnPoints[Direction][CoordIndex][1] := 10; 
-            end;
-            1: begin // Right
-                SpawnPoints[Direction][CoordIndex][0] := 245; 
-                SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
-            end;
-            2: begin // Bottom
-                SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
-                SpawnPoints[Direction][CoordIndex][1] := 245; 
-            end;
-            3: begin // Left
-                SpawnPoints[Direction][CoordIndex][0] := 10; 
-                SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
-            end;
-        end;
-    end;
+	// Define spawn points for each direction
+	for CoordIndex := 0 to MAX_COORDS - 1 do
+	begin
+		case Direction of
+			0: begin // Top
+				SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
+				SpawnPoints[Direction][CoordIndex][1] := 10; 
+			end;
+			1: begin // Right
+				SpawnPoints[Direction][CoordIndex][0] := 245; 
+				SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
+			end;
+			2: begin // Bottom
+				SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
+				SpawnPoints[Direction][CoordIndex][1] := 245; 
+			end;
+			3: begin // Left
+				SpawnPoints[Direction][CoordIndex][0] := 10; 
+				SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
+			end;
+		end;
+	end;
 
-    // Spawn groups at random locations for the given direction
-    for GroupIndex := 0 to NumGroupsToSpawn - 1 do
-    begin
-        // Randomly select a coordinate index from the predefined set of coordinates
-        CoordIndex := States.KamRandomI(MAX_COORDS);
-        SelectedX := SpawnPoints[Direction][CoordIndex][0];
-        SelectedY := SpawnPoints[Direction][CoordIndex][1];
+	// Spawn groups at random locations for the given direction
+	for GroupIndex := 0 to NumGroupsToSpawn - 1 do
+	begin
+		// Randomly select a coordinate index from the predefined set of coordinates
+		CoordIndex := States.KamRandomI(MAX_COORDS);
+		SelectedX := SpawnPoints[Direction][CoordIndex][0];
+		SelectedY := SpawnPoints[Direction][CoordIndex][1];
 
-        // Ensure the selected coordinates are within valid map bounds
-        SelectedX := Utils.MaxI(1, Utils.MinI(254, SelectedX)); 
-        SelectedY := Utils.MaxI(1, Utils.MinI(254, SelectedY)); 
+		// Ensure the selected coordinates are within valid map bounds
+		SelectedX := Utils.MaxI(1, Utils.MinI(254, SelectedX)); 
+		SelectedY := Utils.MaxI(1, Utils.MinI(254, SelectedY)); 
 
-        // Ensure the selected coordinates are walkable
-        while not States.MapTilePassabilityEx(SelectedX, SelectedY, tpWalk) do
-        begin
-            // Generate new coordinates until walkable coordinates are found 
-            CoordIndex := States.KamRandomI(MAX_COORDS);
-            SelectedX := SpawnPoints[Direction][CoordIndex][0];
-            SelectedY := SpawnPoints[Direction][CoordIndex][1];
-        end;
+		// Ensure the selected coordinates are walkable
+		while not States.MapTilePassabilityEx(SelectedX, SelectedY, tpWalk) do
+		begin
+			// Generate new coordinates until walkable coordinates are found 
+			CoordIndex := States.KamRandomI(MAX_COORDS);
+			SelectedX := SpawnPoints[Direction][CoordIndex][0];
+			SelectedY := SpawnPoints[Direction][CoordIndex][1];
+		end;
 		
-        // Spawn the group at the selected walkable coordinates
-        Actions.GiveGroup(PLAYER_18, UnitTypeID(), SelectedX, SelectedY, DIR_DOWN, 12, 4);
+		// Spawn the group at the selected walkable coordinates
+		Actions.GiveGroup(PLAYER_18, UnitTypeID(), SelectedX, SelectedY, DIR_DOWN, 12, 4);
 		if WaveNumber >= 1 then 
 		begin
 			case States.KamRandomI(4) of
@@ -677,7 +672,7 @@ begin
 			end;
 			Actions.GiveGroup(PLAYER_18, UnitIdk, SelectedX, SelectedY, DIR_UP, 9, 3);
 		end;
-    end;
+	end;
 end;
 
 // Destroy all enemy buildings and spawn 'zombies' in place
@@ -688,9 +683,9 @@ var
 begin
 	// Get all remaining enemy buildings (PLAYER_4 to PLAYER_18)
 	EnemyBuildings := States.PlayerGetAllHouses(P);
-    // Destroy each enemy building and spawn a group of zombies in its place
-    for j := 0 to High(EnemyBuildings) do
-    begin
+	// Destroy each enemy building and spawn a group of zombies in its place
+	for j := 0 to High(EnemyBuildings) do
+	begin
 		HousePosX := States.HousePositionX(EnemyBuildings[j]);
 		HousePosY := States.HousePositionY(EnemyBuildings[j]);
 		// Destroy the enemy building
@@ -717,7 +712,7 @@ begin
 	
 	// Check if it's time to send the wave direction message (15 minutes before wave spawns, 30 min before final wave)
 	case States.GameTime of
-    WaveTime1 - 9000, WaveTime2 - 9000, WaveTime3 - 9000, WaveTime4 - 9000, WaveTime5 - 9000, WaveTime6 - 9000, WaveTime7 - 9000:
+	WaveTime1 - 9000, WaveTime2 - 9000, WaveTime3 - 9000, WaveTime4 - 9000, WaveTime5 - 9000, WaveTime6 - 9000, WaveTime7 - 9000:
 		begin
 			// Generate a random direction for the upcoming wave
 			NextWaveDirection := States.KamRandomI(4); // 4 directions (0 - North, 1 - East, 2 - South, 3 - West)
@@ -817,21 +812,21 @@ end;
 // Autofeed
 procedure AutoFeed(P: integer);
 var
-  K: Integer;
-  UnitsToFeed: array of Integer;
+	K: Integer;
+	UnitsToFeed: array of Integer;
 begin
-    UnitsToFeed := States.PlayerGetAllUnits(P);
-    for K := 0 to Length(UnitsToFeed) - 1 do
-    begin
+	UnitsToFeed := States.PlayerGetAllUnits(P);
+	for K := 0 to Length(UnitsToFeed) - 1 do
+	begin
 		Actions.UnitHungerSet(UnitsToFeed[K], States.UnitMaxHunger);
-    end;
+	end;
 end;
  
 //Town-logic, send waves if too close etc. // this will probably cause lag but idk
 procedure TownAggro(PlayerID: Integer);
 var
-  AZB, H, HousePosX, HousePosY, PosX, PosY, ClosestHouse, ClosestUnit, SpawnedGroup, NumberOfSpawnedGroups: Integer;
-  AllZombieBuildings, AllHumanBuildings, AllHumanUnits: array of Integer;
+	AZB, H, HousePosX, HousePosY, PosX, PosY, ClosestHouse, ClosestUnit, SpawnedGroup, NumberOfSpawnedGroups: Integer;
+	AllZombieBuildings, AllHumanBuildings, AllHumanUnits: array of Integer;
 begin
 
 	AllHumanBuildings := States.PlayerGetAllHouses(PlayerID);
@@ -920,28 +915,28 @@ begin
   // Iterate over each house
   for i := 0 to High(Houses) do
   begin
-    // Get the position of the current house
-    HousePosX := States.HousePositionX(Houses[i]);
-    HousePosY := States.HousePositionY(Houses[i]);
-    
-    // Find the closest zombie group to the current house
-    ClosestGroup := States.ClosestGroup(PLAYER_9, HousePosX, HousePosY, -1);
-    
-    // If a closest group is found
-    if ClosestGroup <> -1 then
-    begin
-      // Get a member of the closest group to get its position
-      FlagUnit := States.GroupMember(ClosestGroup, 0);
-      UnitPosX := States.UnitPositionX(FlagUnit);
-      UnitPosY := States.UnitPositionY(FlagUnit);
-      
-      // Check if the distance between the house and the zombie group is within the attacking range
-      if (Abs(HousePosX - UnitPosX) < 10) and (Abs(HousePosY - UnitPosY) < 10) then
-      begin
-        // Order the closest group to attack the house
-        Actions.GroupOrderAttackHouse(ClosestGroup, Houses[i]);
-      end;
-    end;
+	// Get the position of the current house
+	HousePosX := States.HousePositionX(Houses[i]);
+	HousePosY := States.HousePositionY(Houses[i]);
+	
+	// Find the closest zombie group to the current house
+	ClosestGroup := States.ClosestGroup(PLAYER_9, HousePosX, HousePosY, -1);
+	
+	// If a closest group is found
+	if ClosestGroup <> -1 then
+	begin
+	  // Get a member of the closest group to get its position
+	  FlagUnit := States.GroupMember(ClosestGroup, 0);
+	  UnitPosX := States.UnitPositionX(FlagUnit);
+	  UnitPosY := States.UnitPositionY(FlagUnit);
+	  
+	  // Check if the distance between the house and the zombie group is within the attacking range
+	  if (Abs(HousePosX - UnitPosX) < 10) and (Abs(HousePosY - UnitPosY) < 10) then
+	  begin
+		// Order the closest group to attack the house
+		Actions.GroupOrderAttackHouse(ClosestGroup, Houses[i]);
+	  end;
+	end;
   end;
 end;
 
@@ -970,56 +965,54 @@ AutoLureLevel := 0;
 // set quests to active
 TowerQuestActive  	:= true; 			
 CastleQuestActive 	:= true;
-TownQuest1		  	:= true;
-TownQuest2		  	:= true;
-TownQuest3		  	:= true;
-TownQuest4		  	:= true;
-TownQuest5		  	:= true;
-TownQuest6		  	:= true;
-TownQuest7		  	:= true;
-TownQuest8		  	:= true;
-TownQuest9		  	:= true;
-TownQuest10		  	:= true;
-TownQuest11		  	:= true;
-TownQuest12		  	:= true;
-TownQuest13		  	:= true;
+
+for i:= PLAYER_4 to PLAYER_8 do
+begin
+	AddVillageQuestPlayer(i);
+end;
+
+for i:= PLAYER_10 to PLAYER_17 do
+begin
+	AddVillageQuestPlayer(i);
+end;
 
 //spawn billions of units yes
 for P := 0 to PLAYER_23 do
 	PLAYER_9 := States.KamRandomI(4) + 18;
-    for I := 0 to IK do
-    begin
-        case States.KamRandomI(6) of
-            0,1,2: U := UT_MILITIA; 				//Militia 3/6
-            3:     U := UT_REBEL; 					//Rebel 1/6
-            4:     U := UT_ROGUE; 					//Rogue 1/6
-            5: 	   U := UT_VAGABOND; 				//Vagabond 1/6
-        end;	
-        SpawnUnitsInZone((States.KamRandomI(4) + 18), U, WMinX, WMinY, WMaxX, WMaxY, MinX, MinY, MaxX, MaxY);
-        case States.KamRandomI(9) of		
-            0,1,2: U := UT_AXE_FIGHTER; 			//Axe Fighter 3/9
-            3,4,5: U := UT_LANCE_CARRIER; 			//Lance Carrier 3/9
-            6:     U := UT_BOWMAN; 					//Bowman 1/9
-            7:     U := UT_BARBARIAN; 				//Barbarian 1/9
+	for I := 0 to IK do
+	begin
+		case States.KamRandomI(6) of
+			0,1,2: U := UT_MILITIA; 				//Militia 3/6
+			3:     U := UT_REBEL; 					//Rebel 1/6
+			4:     U := UT_ROGUE; 					//Rogue 1/6
+			5: 	   U := UT_VAGABOND; 				//Vagabond 1/6
+		end;	
+		SpawnUnitsInZone((States.KamRandomI(4) + 18), U, WMinX, WMinY, WMaxX, WMaxY, MinX, MinY, MaxX, MaxY);
+		case States.KamRandomI(9) of		
+			0,1,2: U := UT_AXE_FIGHTER; 			//Axe Fighter 3/9
+			3,4,5: U := UT_LANCE_CARRIER; 			//Lance Carrier 3/9
+			6:     U := UT_BOWMAN; 					//Bowman 1/9
+			7:     U := UT_BARBARIAN; 				//Barbarian 1/9
 			8:     U := UT_SCOUT;					//scout 1/9
-        end;	
-        SpawnUnitsInZone((States.KamRandomI(4) + 18), U, MMinX, MMinY, MMaxX, MMaxY, WMinX, WMinY, WMaxX, WMaxY);
-        case States.KamRandomI(11) of	
-            0,1,2: U := UT_SWORD_FIGHTER; 			//Swordman
-            3,4,5: U := UT_PIKEMAN; 				//Pikes
-            6,7,8: U := UT_KNIGHT; 					//Knights
-            9: 	   U := UT_CROSSBOWMAN;				//xbow
-            10:    U := UT_WARRIOR; 				//Metal-Barb
-        end;	
-        SpawnUnitsInZone((States.KamRandomI(4) + 18), U, 1, 1, States.MapWidth - 1, States.MapHeight - 1, MMinX, MMinY, MMaxX, MMaxY);
-    end;
+		end;	
+		SpawnUnitsInZone((States.KamRandomI(4) + 18), U, MMinX, MMinY, MMaxX, MMaxY, WMinX, WMinY, WMaxX, WMaxY);
+		case States.KamRandomI(11) of	
+			0,1,2: U := UT_SWORD_FIGHTER; 			//Swordman
+			3,4,5: U := UT_PIKEMAN; 				//Pikes
+			6,7,8: U := UT_KNIGHT; 					//Knights
+			9: 	   U := UT_CROSSBOWMAN;				//xbow
+			10:    U := UT_WARRIOR; 				//Metal-Barb
+		end;	
+		SpawnUnitsInZone((States.KamRandomI(4) + 18), U, 1, 1, States.MapWidth - 1, States.MapHeight - 1, MMinX, MMinY, MMaxX, MMaxY);
+	end;
 	I := 0;
 end;
 
 
 procedure OnTick;
 var 
-T: Integer;
+  T: Integer;
+  i: integer;
 
 begin
 	UpdateOverlay(PLAYER_1);
@@ -1133,161 +1126,15 @@ begin
 	end;
 	
 	// Villages quests
-	if TownQuest1 then
+	for i:= 0 to High(VillageQuestPlayers) do
 	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_4)) = 0 then
+		if Length(States.PlayerGetAllHouses(VillageQuestPlayers[i])) = 0 then
 		begin
-			Actions.PlayerDefeat(PLAYER_4);
-		end;
-		If States.PlayerDefeated(PLAYER_4) then
-		begin
+			Actions.PlayerDefeat(VillageQuestPlayers[i]);
+			Actions.ShowMsg(-1, RewardMsg + IntToStr(VillageQuestPlayers[i]));
 			GiveReward();
-			TownQuest1 := false;
-		end;
-	end;
-	if TownQuest2 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_5)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_5);
-		end;
-		If States.PlayerDefeated(PLAYER_5) then
-		begin
-			GiveReward();
-			TownQuest2 := false;
-		end;
-	end;
-	if TownQuest3 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_6)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_6);
-		end;
-		If States.PlayerDefeated(PLAYER_6) then
-		begin
-			GiveReward();
-			TownQuest3 := false;
-		end;
-	end;
-	if TownQuest4 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_7)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_7);
-		end;
-		If States.PlayerDefeated(PLAYER_7) then
-		begin
-			GiveReward();
-			TownQuest4 := false;
-		end;
-	end;
-	if TownQuest5 then
-	begin
-
-		if Length(States.PlayerGetAllHouses(PLAYER_8)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_8);
-		end;
-		If States.PlayerDefeated(PLAYER_8) then
-		begin
-			GiveReward();
-			TownQuest5 := false;
-		end;
-	end;
-	if TownQuest6 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_10)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_10);
-		end;
-		If States.PlayerDefeated(PLAYER_10) then
-		begin
-			GiveReward();
-			TownQuest6 := false;
-		end;
-	end;
-	if TownQuest7 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_11)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_11);
-		end;
-		If States.PlayerDefeated(PLAYER_11) then
-		begin
-			GiveReward();
-			TownQuest7 := false;
-		end;
-	end;
-	if TownQuest8 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_12)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_12);
-		end;
-		If States.PlayerDefeated(PLAYER_12) then
-		begin
-			GiveReward();
-			TownQuest8 := false;
-		end;
-	end;
-	if TownQuest9 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_13)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_13);
-		end;
-		If States.PlayerDefeated(PLAYER_13) then
-		begin
-			GiveReward();
-			TownQuest9 := false;
-		end;
-	end;
-	if TownQuest10 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_14)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_14);
-		end;
-		If States.PlayerDefeated(PLAYER_14) then
-		begin
-			GiveReward();
-			TownQuest10 := false;
-		end;
-	end;
-	if TownQuest11 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_15)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_15);
-		end;
-		If States.PlayerDefeated(PLAYER_15) then
-		begin
-			GiveReward();
-			TownQuest11 := false;
-		end;
-	end;
-	if TownQuest12 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_16)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_16);
-		end;
-		If States.PlayerDefeated(PLAYER_16) then
-		begin
-			GiveReward();
-			TownQuest12 := false;
-		end;
-	end;
-	if TownQuest13 then
-	begin
-		if Length(States.PlayerGetAllHouses(PLAYER_17)) = 0 then
-		begin
-			Actions.PlayerDefeat(PLAYER_17);
-		end;
-		If States.PlayerDefeated(PLAYER_17) then
-		begin
-			GiveReward();
-			TownQuest13 := false;
+			VillageQuestPlayers := U.ArrayRemoveIndexI(i, VillageQuestPlayers);
+			Dec(i);
 		end;
 	end;
 end;
@@ -1375,15 +1222,19 @@ var HousePosX, HousePosY, U : Integer;
 // If a house of a human player is destroyed, zombies will be spawned in this place
 begin
 	if (States.HouseOwner(aHouse) = PLAYER_1) and (States.HouseType(aHouse) = HT_WATCHTOWER) then
-    begin
-        RemoveTowerFromArray(aHouse);
-    end;
+	begin
+		RemoveTowerFromArray(aHouse);
+	end
+	else if ((States.HouseOwner(aHouse) = PLAYER_1) and (States.HouseType(aHouse) = HT_METALLURGISTS)) then
+	begin
+		RemovePlayerMetallurgists(aHouse);
+	end;
 	
 	If((aDestroyer <> -1) and (aDestroyer <> States.HouseOwner(aHouse)) and (aDestroyer > PLAYER_3) and (States.HouseType(aHouse) <> HT_WATCHTOWER)) then
 	begin
 		U := UnitTypeID();
 		HousePosX := States.HousePositionX(aHouse);
-        HousePosY := States.HousePositionY(aHouse);
+		HousePosY := States.HousePositionY(aHouse);
 		if States.HouseBuildingProgress(aHouse) <> 0 then
 		begin
 			Actions.GiveGroup(PLAYER_18, U, HousePosX, HousePosY, DIR_DOWN, 6, 3);
@@ -1402,8 +1253,8 @@ var HousePosX, HousePosY, aGroup, FlagUnit, U : Integer;
 
 begin
 	//Actions.Log('aAttacker: ' + IntToStr(aAttacker) + ' States.UnitOwner(aAttacker): ' + IntToStr(States.UnitOwner(aAttacker)) + ' States.HouseOwner(aHouse) ' + IntToStr(States.UnitOwner(aHouse)));
-    If ((aAttacker <> -1) and (States.UnitOwner(aAttacker) <> States.HouseOwner(aHouse)) and (States.UnitOwner(aAttacker) <= PLAYER_3)) then
-    begin
+	If ((aAttacker <> -1) and (States.UnitOwner(aAttacker) <> States.HouseOwner(aHouse)) and (States.UnitOwner(aAttacker) <= PLAYER_3)) then
+	begin
 		case States.KamRandomI(States.HouseTypeMaxHealth(States.HouseType(aHouse))) of
 			1:	
 			begin
@@ -1415,47 +1266,47 @@ begin
 				Actions.GroupOrderAttackUnit(States.UnitsGroup(aAttacker), FlagUnit);
 			end;
 		end;
-    end;
+	end;
 end;
 
 procedure OnWarriorEquipped(aUnit, aGroup: Integer);
 var
-    UnitOwner: Integer;
-    UnitType: Integer;
+	UnitOwner: Integer;
+	UnitType: Integer;
 begin
-    UnitOwner := States.UnitOwner(aUnit);
-    UnitType := States.UnitType(aUnit);
+	UnitOwner := States.UnitOwner(aUnit);
+	UnitType := States.UnitType(aUnit);
 
-    // rogue = tower upgrade
-    if (UnitOwner = PLAYER_1) and (UnitType = UT_ROGUE) then
-    begin
-        GrantTowerRegenUpgrade;       
-        Actions.UnitKill(aUnit, true); 
-    end;
+	// rogue = tower upgrade
+	if (UnitOwner = PLAYER_1) and (UnitType = UT_ROGUE) then
+	begin
+		GrantTowerRegenUpgrade;       
+		Actions.UnitKill(aUnit, true); 
+	end;
 	// barb = insta kill upgrade
-    if (UnitOwner = PLAYER_1) and (UnitType = UT_BARBARIAN) then
-    begin
-        InstakillUpgrade;       
-        Actions.UnitKill(aUnit, true); 
-    end;
+	if (UnitOwner = PLAYER_1) and (UnitType = UT_BARBARIAN) then
+	begin
+		InstakillUpgrade;       
+		Actions.UnitKill(aUnit, true); 
+	end;
 	// vagabond = Auto Lure upgrade
-    if (UnitOwner = PLAYER_1) and (UnitType = UT_VAGABOND) then
-    begin
-        GrantAutoLureUpgrade;       
-        Actions.UnitKill(aUnit, true); 
-    end;
-    if (UnitOwner = PLAYER_1) and (UnitType = UT_REBEL) then
-    begin
+	if (UnitOwner = PLAYER_1) and (UnitType = UT_VAGABOND) then
+	begin
+		GrantAutoLureUpgrade;       
+		Actions.UnitKill(aUnit, true); 
+	end;
+	if (UnitOwner = PLAYER_1) and (UnitType = UT_REBEL) then
+	begin
 		Inc(RebelUpgradeLevel);
 		UpgradeGoldDuplication;
 		Actions.UnitKill(aUnit, true);
-    end;
+	end;
 	
-    if (UnitOwner = PLAYER_1) and (UnitType = UT_WARRIOR) then
-    begin
-        RandomRewardUpgrade;       
-        Actions.UnitKill(aUnit, true); 
-    end;
+	if (UnitOwner = PLAYER_1) and (UnitType = UT_WARRIOR) then
+	begin
+		RandomRewardUpgrade;       
+		Actions.UnitKill(aUnit, true); 
+	end;
 end;
 
 procedure OnUnitWounded(aUnit, aAttacker: Integer);
@@ -1465,67 +1316,81 @@ begin
   if States.UnitOwner(aAttacker) = PLAYER_1 then
   begin
 	InstakillChance := 0;
-    case InstaKillLevel of
+	case InstaKillLevel of
 		// chances of instakill in %
 		1: InstakillChance := 5; 
 		2: InstakillChance := 7;
 		3: InstakillChance := 10;
 	end;
 
-    if InstakillChance > 0 then
-    begin
-      // random number between 0 und 100 for kill probability
-      if States.KamRandomI(100) < InstakillChance then
-      begin
-        // Instakill 
-        Actions.UnitKill(aUnit, false);  // kill enemy hit
-        //Actions.ShowMsg(PLAYER_1, 'Instakill triggered!');  // debug
+	if InstakillChance > 0 then
+	begin
+	  // random number between 0 und 100 for kill probability
+	  if States.KamRandomI(100) < InstakillChance then
+	  begin
+		// Instakill 
+		Actions.UnitKill(aUnit, false);  // kill enemy hit
+		//Actions.ShowMsg(PLAYER_1, 'Instakill triggered!');  // debug
 		Inc(InstaKillCount);
-      end;
-    end;
+	  end;
+	end;
   end;
 end;
 
 procedure OnWareProduced(aHouse: Integer; aWareType: TKMWareType; aCount: Integer);
 var
-	i, TownhallID : Integer;
-    aHouses : array of Integer;
-	
+	i: Integer;	
+	index: integer;
+	amount: integer;
 begin
-    if GoldDuplicateChance = 0 then Exit; 
-    if aWareType <> wtGold then Exit;   
+	if (OnWareProducedBlocked) then Exit;
+	if GoldDuplicateChance = 0 then Exit; 
+	if aWareType <> wtGold then Exit;   
 	if States.HouseType(aHouse) <> HT_METALLURGISTS then Exit;
 	
-    aHouses := States.PlayerGetAllHouses(PLAYER_1);
-	
-    for i := 0 to High(aHouses) do
-    begin
-        
-		TownhallID := aHouses[i];
-		
-		if (States.HouseType(TownhallID) = HT_TOWN_HALL)	then
-		begin	
-		    // Zufällige Chance berechnen
-			if States.KamRandomI(100) < GoldDuplicateChance then
-			begin
-				// Gold direkt zur Townhall hinzufügen
-				Actions.HouseAddWaresTo(TownhallID, WT_GOLD, aCount);
-				
+	index := FindPlayerMetallurgistsIndex(aHouse);
+	amount := S.HouseWareAmount(aHouse, wtGold);
 
-				//Actions.ShowMsg(PLAYER_1, 'Extra ' + IntToStr(aCount) + ' Gold wurde zur Townhall hinzugefügt!');
-				Exit;
-			end;	
+	// ZufР“В¤llige Chance berechnen
+	if States.KamRandomI(100) < GoldDuplicateChance then
+	begin
+			
+		// If we can't add gold next ware produce will have extra gold.
+		if (amount > 5)then
+		begin
+			Inc(PlayerMetallurgists[index].BonusChestCount);
+		end else
+		begin
+			OnWareProducedBlocked := true;
+			Actions.HouseAddWaresToEx(aHouse, wtGold, 1);
+			OnWareProducedBlocked := false;
+		end;	
+	end else
+	begin
+
+		// Giving extra gold prom previous producing cycle.
+		if ((amount <= 5) and (PlayerMetallurgists[index].BonusChestCount > 0)) then
+		begin
+			Dec(PlayerMetallurgists[index].BonusChestCount);
+			OnWareProducedBlocked := true;
+			Actions.HouseAddWaresToEx(aHouse, wtGold, 1);
+			OnWareProducedBlocked := false;
 		end;
-	end;	
+	end;
+
 end;
 
 procedure OnHouseBuilt(aHouse: Integer);
 begin
 	CheckPlayerHouseAllowed(S.HouseOwner(aHouse));
 	if (States.HouseOwner(aHouse) = PLAYER_1) and (States.HouseType(aHouse) = HT_WATCHTOWER) then
-    begin
-        AddTowerToArray(aHouse);
-    end;
+	begin
+		AddTowerToArray(aHouse);
+	end
+	else if ((States.HouseOwner(aHouse) = PLAYER_1) and (States.HouseType(aHouse) = HT_METALLURGISTS)) then
+	begin
+		AddPlayerMetallurgists(aHouse);
+	end;
 end;
 
 procedure OnHouseAfterDestroyedEx(aHouseType: TKMHouseType; aOwner: Integer; aX, aY: Integer);
@@ -1535,7 +1400,18 @@ end;
 
 procedure OnHousePlanPlacedEx(aPlayer: Integer; aX, aY: Integer; aHouseType: TKMHouseType);
 begin
+
 	CheckPlayerHouseAllowed(aPlayer);
+
+	//If player pressed shift and is making more then house plans more then allowed, we will remove it.
+	if ((aHouseType = htBarracks) and (S.StatHouseTypeCountEx(aPlayer, htBarracks) + S.StatHouseTypePlansCountEx(aPlayer, htBarracks) > MaxBarracksCount)) then
+	begin
+		A.PlanRemove(aPlayer, aX, aY);
+	end
+	else if ((aHouseType = htTownhall) and (S.StatHouseTypeCountEx(aPlayer, htTownhall) + S.StatHouseTypePlansCountEx(aPlayer, htTownhall) > MaxTownhallCount )) then
+	begin
+		A.PlanRemove(aPlayer, aX, aY);
+	end;
 end;
 
 procedure OnHousePlanRemovedEx(aPlayer: Integer; aX, aY: Integer; aHouseType: TKMHouseType);

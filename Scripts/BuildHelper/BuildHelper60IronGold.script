@@ -1,0 +1,136 @@
+{$IFNDEF DEBUG}
+  {$DEFINE DEBUG}
+{$ENDIF}
+
+{$IFNDEF BuildHelper60IronGold}
+{$DEFINE BuildHelper60IronGold}
+
+{$IFDEF DEBUG}
+  {$IFNDEF BuildHelperCore}
+    {$INCLUDE BuildHelperCore.script}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFNDEF BuildHelper60Default}
+  {$INCLUDE BuildHelper60Default.script}
+{$ENDIF}
+
+
+
+
+
+
+
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+//PLANNED BUILDINGS FUNCTIONS.
+//----------------------------------------------------------------------------------------------------------------------------------------------------
+
+function BH_IronGold60_Slow_GetPlannedHouses(player: BH_Player; buildings: BH_BuildingsCountInfo; planning: boolean): array of BH_BuildingInfo;
+var
+  maxBuildingsCount: integer;
+
+begin
+  maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
+
+  result := BH_Default_AddFirstInn(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddInns(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_Slow_AddFishers(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_Slow_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_Slow_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddLowPrioritySchools(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddSwineFarms(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_Slow_AddFarms(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddArmorWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddWeaponWorkshops(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddTanneries(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddStables(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
+  //For slow build orders we want to make all quarries right at start.
+  result := BH_Default_Slow_AddQuarries(result, buildings, player, 99, planning);
+
+end;
+
+function BH_IronGold60_GetPlannedHouses(player: BH_Player; buildings: BH_BuildingsCountInfo; planning: boolean): array of BH_BuildingInfo;
+var
+  maxBuildingsCount: integer;
+
+begin
+
+  if (player.IsSlowBuildOrder) then
+  begin
+    result := BH_Default60_Slow_GetPlannedHouses(player, buildings, planning);
+    exit;
+  end;
+
+  maxBuildingsCount := BH_GetMaxPlayerPlannedBuildings(player, planning);
+
+  result := BH_Default_AddFirstInn(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Make 2nd Inn faster.
+  result := BH_Default60_AddInns(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. 2nd school later. No need in a lot of recruits.
+  result := BH_Default60_AddSchools(result, buildings, player, maxBuildingsCount, planning);
+
+  result := BH_Default60_AddTowers(result, buildings, player, maxBuildingsCount, planning);
+  //Actually no need to add this. But let it be.
+  result := BH_Default60_AddButchers(result, buildings, player, maxBuildingsCount, planning);
+
+  result := BH_Default_AddBakeries(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Need to see the fish amount. May be we can make less bread or more.
+  result := BH_Default60_AddFishers(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. We need more gold mines focus.
+  result := BH_Default60_AddGoldMines(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. 3rd sawmill can be done later.
+  result := BH_Default60_AddSawmills(result, buildings, player, maxBuildingsCount, planning);
+
+  result := BH_Default60_AddStartingWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Additional woodcutters should be added by different conditions.
+  result := BH_Default60_AddAdditionalWoodcutters(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. We need less focus on mines at start and more iron mines focus.
+  result := BH_Default60_AddIronMines(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Nightmare function... Very different coal conditions.
+  result := BH_Default60_AddCoalMines(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Make more of them.
+  result := BH_Default60_AddMetallurgists(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake we need only 1-3 farms for bread.
+  result := BH_Default60_AddFarms(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default_AddBarracks(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. We need armor production later.
+  result := BH_Default60_AddArmorSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddWeaponSmithies(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddIronSmithies(result, buildings, player, maxBuildingsCount, planning);
+
+
+  result := BH_Default60_AddMills(result, buildings, player, maxBuildingsCount, planning);
+  result := BH_Default60_AddQuarries(result, buildings, player, maxBuildingsCount, planning);
+
+  //Remake. Need to make then earlier.
+  result := BH_Default60_AddMarkets(result, buildings, player, maxBuildingsCount, planning);
+
+end;
+
+{$ENDIF}
