@@ -9,15 +9,15 @@
 (*
 notes:
 
-nach update system rebalance -> ALLES BISSCHEN SCHWIERIGER KEINE AHNUNG WIESO ICH CAPS AN HABE
-einen weg finden, dass waves besser einslagen (besonders nord war kacke)
-map braucht changes, dass man einfach außen pushen kann, also weniger berge, größere durchgänge, maybe hilft das auch für den oberen punkt
-wave bei 4:30 war extrem schwach? checken was da los ist
-waves müssen stärker werden, bzw glaube ich, dass nicht alles gespawned werden, weil alle auf dem fleck spawnen, also ggf. nach und nach spawnen lassen
-weniger food probleme, maybe irgendwas ausdenken keine ahnung gerade
--make it easier to lose early
+
+
+
+
+
+
+
 map changes https://imgur.com/a/kGCassP
-overlay einfach gestalten
+
 prevent cheesing (like putting down a lot of buildings to create small passages -> test how that feels like
 implement noise -> buildings make noise that attract zombies
 
@@ -25,9 +25,29 @@ add libx support for messages
 
 reduce rogues in weak circle
 hard difficulty -> make it way harder :D
-make wave 1 even harder
+
+
+random attack when in range check more often, or fix it idk its weird atm
 
 add consisting difficulty scaling > rewards, waves?, ressources on map?, houses get more dmg
+
+updated notes:
+- balance rewards
+- rewards better for villages (atleast in further away cities)
+1- fix wave algorythm ##### DONE
+- balance/change zombie villages 
+2- adjust random walking -> more action #### DONE
+3- fix "autoattack range" -> if unit/building is within range, attack it (if the group is idle) #### DONE
+- make rewards and waves not repeat for the same (ykwim)
+- balance/add more rewards
+4- add random raids
+- balance waves/more?
+- implement noise?
+5- reduce rogues spawns
+6- make final wave remaining towns not count towards rewards
+- show quests in overlay/make overlay easier
+- implement lose/win conditions
+- destroyed towns on last wave to not give rewards
 
 ______________________________________
 things to add to describtion later on:
@@ -42,6 +62,7 @@ things to add to describtion later on:
 - 
 *)
 /////////////////////////////////////////////////////////////////////////////
+
 
 {$I consts.script}
 {$I AccurateTowers.script}
@@ -85,7 +106,7 @@ DIR_SOUTH = 2;
 DIR_WEST = 3;
 DIR_FINAL = 4;
 NUM_DIRECTIONS = 4;
-MAX_COORDS = 5;
+MAX_COORDS = 30;
 
 //only one building
 MaxBarracksCount = 1;
@@ -577,6 +598,7 @@ begin
 			Actions.GiveWares(PLAYER_1, WT_SAUSAGES, 25);
 			// Give 20 goldchests
 			Actions.GiveWares(PLAYER_1, WT_GOLD, 35);
+
 			// Message
 			Actions.ShowMsg(-1, RewardMsg);
 		end;
@@ -605,63 +627,87 @@ begin
 	Actions.ShowMsg(-1, Msg);
 end;
 
+// Random raids every x mins (with random factor) 2-4 groups of zombies will spawn within fog and attack player 
+procedure RandomRaid;
+var RndX, RndY, NumGroups, i : Integer;
+
+begin
+	Actions.Log('Random Raid triggered!');
+	RndX := 1 + States.KamRandomI(255);
+	RndY := 1 + States.KamRandomI(255);
+	// Get random coords that are not revealed by player
+	while States.Fogrevealed(PLAYER_1, RndX, RndY) and (not States.MapTilePassabilityEx(RndX, RndY, tpWalk)) do
+	begin
+		RndX := 1 + States.KamRandomI(255);
+		RndY := 1 + States.KamRandomI(255);
+		Actions.Log('X :' + IntToStr(RndX) + ' + Y : ' + IntToStr(RndY));
+	end;
+	// Calculate amount of groups spawned
+	NumGroups := 1 + GameTimeMultiplier();
+	for i := 0 to NumGroups - 1 do
+	begin
+		Actions.GiveGroup(PLAYER_18, UnitTypeID(), RndX, RndY, DIR_DOWN, Round(6 * DifficultyMultiplier()), 3);
+	end;
+end;
+
+
 procedure SpawnWave(Direction, WaveNumber: Integer);
 var
-	NumGroupsToSpawn, GroupIndex, CoordIndex, SelectedX, SelectedY, NumGroupsBase, UnitIdk : Integer;
+    NumGroupsToSpawn, GroupIndex, CoordIndex, SelectedX, SelectedY, NumGroupsBase, UnitIdk : Integer;
 begin
-	if (Direction < 0) or (Direction >= NUM_DIRECTIONS) then
-		Exit;
+    if (Direction < 0) or (Direction >= NUM_DIRECTIONS) then
+        Exit;
 
-	// Calculate the number of groups to spawn based on the wave number						
-	NumGroupsBase := 5;	// Base number of groups in each wave
-	NumGroupsToSpawn := (NumGroupsBase * GameTimeMultiplier()) + (WaveNumber * 3); // calculation for the numbers per wave
+    // Calculate the number of groups to spawn based on the wave number						
+    NumGroupsBase := 5;	// Base number of groups in each wave
+    NumGroupsToSpawn := (NumGroupsBase * GameTimeMultiplier()) + (WaveNumber * 4); // calculation for the numbers per wave
 
-	// Define spawn points for each direction
-	for CoordIndex := 0 to MAX_COORDS - 1 do
-	begin
-		case Direction of
-			0: begin // Top
-				SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
-				SpawnPoints[Direction][CoordIndex][1] := 10; 
-			end;
-			1: begin // Right
-				SpawnPoints[Direction][CoordIndex][0] := 245; 
-				SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
-			end;
-			2: begin // Bottom
-				SpawnPoints[Direction][CoordIndex][0] := 95 + States.KamRandomI(66);
-				SpawnPoints[Direction][CoordIndex][1] := 245; 
-			end;
-			3: begin // Left
-				SpawnPoints[Direction][CoordIndex][0] := 10; 
-				SpawnPoints[Direction][CoordIndex][1] := 95 + States.KamRandomI(66);
-			end;
-		end;
-	end;
+    // Define spawn points for each direction
+    for CoordIndex := 0 to MAX_COORDS - 1 do
+    begin
+        case Direction of
+            0: begin // Top
+                SpawnPoints[Direction][CoordIndex][0] := 70 + States.KamRandomI(91);
+                SpawnPoints[Direction][CoordIndex][1] := 5 + States.KamRandomI(10); 
+            end;
+            1: begin // Right
+                SpawnPoints[Direction][CoordIndex][0] := 240 + States.KamRandomI(10); 
+                SpawnPoints[Direction][CoordIndex][1] := 70 + States.KamRandomI(91);
+            end;
+            2: begin // Bottom
+                SpawnPoints[Direction][CoordIndex][0] := 70 + States.KamRandomI(91);
+                SpawnPoints[Direction][CoordIndex][1] := 240 + States.KamRandomI(10); 
+            end;
+            3: begin // Left
+                SpawnPoints[Direction][CoordIndex][0] := 5 + States.KamRandomI(10); 
+                SpawnPoints[Direction][CoordIndex][1] := 70 + States.KamRandomI(91);
+            end;
+        end;
+    end;
 
-	// Spawn groups at random locations for the given direction
-	for GroupIndex := 0 to NumGroupsToSpawn - 1 do
-	begin
-		// Randomly select a coordinate index from the predefined set of coordinates
-		CoordIndex := States.KamRandomI(MAX_COORDS);
-		SelectedX := SpawnPoints[Direction][CoordIndex][0];
-		SelectedY := SpawnPoints[Direction][CoordIndex][1];
+    // Spawn groups at random locations for the given direction
+    for GroupIndex := 0 to NumGroupsToSpawn - 1 do
+    begin
+        // Randomly select a coordinate index from the predefined set of coordinates
+        CoordIndex := States.KamRandomI(MAX_COORDS);
+        SelectedX := SpawnPoints[Direction][CoordIndex][0];
+        SelectedY := SpawnPoints[Direction][CoordIndex][1];
 
-		// Ensure the selected coordinates are within valid map bounds
-		SelectedX := Utils.MaxI(1, Utils.MinI(254, SelectedX)); 
-		SelectedY := Utils.MaxI(1, Utils.MinI(254, SelectedY)); 
+        // Ensure the selected coordinates are within valid map bounds
+        SelectedX := Utils.MaxI(1, Utils.MinI(254, SelectedX)); 
+        SelectedY := Utils.MaxI(1, Utils.MinI(254, SelectedY)); 
 
-		// Ensure the selected coordinates are walkable
-		while not States.MapTilePassabilityEx(SelectedX, SelectedY, tpWalk) do
-		begin
-			// Generate new coordinates until walkable coordinates are found 
-			CoordIndex := States.KamRandomI(MAX_COORDS);
-			SelectedX := SpawnPoints[Direction][CoordIndex][0];
-			SelectedY := SpawnPoints[Direction][CoordIndex][1];
-		end;
+        // Ensure the selected coordinates are walkable
+        while not States.MapTilePassabilityEx(SelectedX, SelectedY, tpWalk) do
+        begin
+            // Generate new coordinates until walkable coordinates are found 
+            CoordIndex := States.KamRandomI(MAX_COORDS);
+            SelectedX := SpawnPoints[Direction][CoordIndex][0];
+            SelectedY := SpawnPoints[Direction][CoordIndex][1];
+        end;
 		
-		// Spawn the group at the selected walkable coordinates
-		Actions.GiveGroup(PLAYER_18, UnitTypeID(), SelectedX, SelectedY, DIR_DOWN, 12, 4);
+        // Spawn the group at the selected walkable coordinates
+        Actions.GiveGroup(PLAYER_18, UnitTypeID(), SelectedX, SelectedY, DIR_DOWN, 12, 4);
 		if WaveNumber >= 1 then 
 		begin
 			case States.KamRandomI(4) of
@@ -672,7 +718,7 @@ begin
 			end;
 			Actions.GiveGroup(PLAYER_18, UnitIdk, SelectedX, SelectedY, DIR_UP, 9, 3);
 		end;
-	end;
+    end;
 end;
 
 // Destroy all enemy buildings and spawn 'zombies' in place
@@ -915,28 +961,67 @@ begin
   // Iterate over each house
   for i := 0 to High(Houses) do
   begin
-	// Get the position of the current house
-	HousePosX := States.HousePositionX(Houses[i]);
-	HousePosY := States.HousePositionY(Houses[i]);
-	
-	// Find the closest zombie group to the current house
-	ClosestGroup := States.ClosestGroup(PLAYER_9, HousePosX, HousePosY, -1);
-	
-	// If a closest group is found
-	if ClosestGroup <> -1 then
-	begin
-	  // Get a member of the closest group to get its position
-	  FlagUnit := States.GroupMember(ClosestGroup, 0);
-	  UnitPosX := States.UnitPositionX(FlagUnit);
-	  UnitPosY := States.UnitPositionY(FlagUnit);
-	  
-	  // Check if the distance between the house and the zombie group is within the attacking range
-	  if (Abs(HousePosX - UnitPosX) < 10) and (Abs(HousePosY - UnitPosY) < 10) then
-	  begin
-		// Order the closest group to attack the house
-		Actions.GroupOrderAttackHouse(ClosestGroup, Houses[i]);
-	  end;
-	end;
+    // Get the position of the current house
+    HousePosX := States.HousePositionX(Houses[i]);
+    HousePosY := States.HousePositionY(Houses[i]);
+    
+    // Find the closest zombie group to the current house
+    ClosestGroup := States.ClosestGroup(PLAYER_9, HousePosX, HousePosY, -1);
+    
+    // If a closest group is found
+    if ClosestGroup <> -1 then
+    begin
+      // Get a member of the closest group to get its position
+      FlagUnit := States.GroupMember(ClosestGroup, 0);
+      UnitPosX := States.UnitPositionX(FlagUnit);
+      UnitPosY := States.UnitPositionY(FlagUnit);
+      
+      // Check if the distance between the house and the zombie group is within the attacking range
+      if (Abs(HousePosX - UnitPosX) < 12) and (Abs(HousePosY - UnitPosY) < 12) then
+      begin
+        // Order the closest group to attack the house
+		if States.UnitIdle(FlagUnit) then
+			Actions.GroupOrderAttackHouse(ClosestGroup, Houses[i]);
+      end;
+    end;
+  end;
+end;
+
+// If Zombie is too close to human unit, it will attack it
+procedure ClosestGroupUnitAttack(PlayerID: Integer);
+var
+  i, HousePosX, HousePosY, UnitPosX, UnitPosY, ClosestGroup, FlagUnit: Integer;
+  Units: array of Integer;
+begin
+  // Get all Units of the specified player
+  Units := States.PlayerGetAllUnits(PlayerID);
+  
+  // Iterate over each Unit
+  for i := 0 to High(Units) do
+  begin
+    // Get the position of the current house
+    HousePosX := States.UnitPositionX(Units[i]);
+    HousePosY := States.UnitPositionY(Units[i]);
+    
+    // Find the closest zombie group to the current house
+    ClosestGroup := States.ClosestGroup(PLAYER_9, HousePosX, HousePosY, -1);
+    
+    // If a closest group is found
+    if ClosestGroup <> -1 then
+    begin
+      // Get a member of the closest group to get its position
+      FlagUnit := States.GroupMember(ClosestGroup, 0);
+      UnitPosX := States.UnitPositionX(FlagUnit);
+      UnitPosY := States.UnitPositionY(FlagUnit);
+      
+      // Check if the distance between the house and the zombie group is within the attacking range
+      if (Abs(HousePosX - UnitPosX) < 12) and (Abs(HousePosY - UnitPosY) < 12) then
+      begin
+        // Order the closest group to attack the house
+		if States.UnitIdle(FlagUnit) then
+			Actions.GroupOrderAttackHouse(ClosestGroup, Units[i]);
+      end;
+    end;
   end;
 end;
 
@@ -945,7 +1030,7 @@ var P, U : Integer;
 var IK, I : Integer;
 
 begin
-IK := 600; //number of groups i dont even know how it works but somehow it does
+IK := 700; //number of groups i dont even know how it works but somehow it does
 NextWaveDirection := -1;
 EnemyUnitsKilled := 0;
 ZombiePlayerID := PLAYER_4;
@@ -954,7 +1039,8 @@ RebelUpgradeLevel := 0;
 GoldDuplicateChance := 0;
 RReward := 0;
 
-
+// Raid time
+RTime := 15000 + States.KamRandomI(6000);
 
 // Upgrade-Level intialize
 TowerRegenStoneLevel := 0; 
@@ -1020,12 +1106,26 @@ begin
 	TowerLureEnemies;
 
 	PLAYER_9 := States.KamRandomI(4) + 18;
+	//after 0.5 hour start random raids every xhours
 	
-	if States.GameTime mod Round(350 * DifficultyMultiplier()) = 0 then
+	if States.GameTime > 0 then
+	begin
+		if States.GameTime mod RTime = 0 then
+		begin
+			RandomRaid;
+			RTime := States.GameTime + Round(15000 + States.KamRandomI(6000) / GameTimeMultiplier());
+		end;
+	end;
+	
+	if States.GameTime mod 12 = 0 then
+	begin
+		ClosestGroupUnitAttack(PLAYER_1);
+		ClosestGroupHouseAttack(PLAYER_1);
+	end;
+	if States.GameTime mod Round(300 * DifficultyMultiplier()) = 0 then
 	begin
 		if States.PlayerEnabled(PLAYER_1) then
 		begin
-			ClosestGroupHouseAttack(PLAYER_1);
 			TownAggro(PLAYER_1);
 			Inc(ZombiePlayerID);
 			if (ZombiePlayerID > PLAYER_18) then
@@ -1044,6 +1144,7 @@ begin
 			//TownAggro(PLAYER_3);
 		//end;
 	end;
+
 	
 	// KILL COUNTER REWARDS YES
 	CheckEnemyKillsReward;
@@ -1150,35 +1251,43 @@ begin
 	end;	
 	
 	// If a unit dies, another one of the same kind will move to a random place to create some movement 
-	if (aKiller <> -1) and (States.UnitOwner(aUnit) = PLAYER_9) and (States.Gametime > (Round(18000 * DifficultyMultiplier()))) then // Start after 30 min
+	if (aKiller <> -1) and (States.Gametime > (Round(18000 * DifficultyMultiplier()))) and ((States.UnitOwner(aUnit) = PLAYER_19) or (States.UnitOwner(aUnit) = PLAYER_20) or (States.UnitOwner(aUnit) = PLAYER_21) or (States.UnitOwner(aUnit) = PLAYER_22) or (States.UnitOwner(aUnit) = PLAYER_23)) then // Start after 30 min
 	begin
-		for i := 0 to GameTimeMultiplier() do 
+		for i := 0 to GameTimeMultiplier() + 1 do 
 		begin
-			// Get a random unit from PLAYER_9
-			xRnd := 1 + States.KamRandomI(States.MapWidth - 1);
-			yRnd := 1 + States.KamRandomI(States.MapHeight - 1);
-			RandUnit := States.ClosestUnit(PLAYER_9, xRnd, yRnd, States.UnitType(aUnit));
+			while not States.MapTilePassabilityEx(NewX, NewY, tpWalk) do
+			begin 
 
-			if RandUnit <> -1 then 
-			begin
-				// Calculate the direction towards the center of the map
-				CenterX := 127;
-				CenterY := 127;
-				DirectionX := CenterX - States.UnitPositionX(RandUnit);
-				DirectionY := CenterY - States.UnitPositionY(RandUnit);
 
-				// Normalize the direction vector
-				Magnitude := Round(Sqrt(Utils.Sqr(DirectionX) + Utils.Sqr(DirectionY)));
-				if Magnitude <> 0 then
+
+				if RandUnit <> -1 then 
 				begin
-					DirectionX := Round(DirectionX * 10 / Magnitude);
-					DirectionY := Round(DirectionY * 10 / Magnitude);
+					// Calculate the direction towards the center of the map
+					CenterX := 127;
+					CenterY := 127;
+					// Calculate the new destination coordinates closer to the center
+					NewX := States.UnitPositionX(RandUnit) + DirectionX;
+					NewY := States.UnitPositionY(RandUnit) + DirectionY;
+					// Get a random unit from PLAYER_9
+					xRnd := 1 + States.KamRandomI(States.MapWidth - 1);
+					yRnd := 1 + States.KamRandomI(States.MapHeight - 1);
+					RandUnit := States.ClosestUnit(PLAYER_9, xRnd, yRnd, States.UnitType(aUnit));
+					
+					DirectionX := CenterX - States.UnitPositionX(RandUnit);
+					DirectionY := CenterY - States.UnitPositionY(RandUnit);
+
+					// Normalize the direction vector
+					Magnitude := Round(Sqrt(Utils.Sqr(DirectionX) + Utils.Sqr(DirectionY)));
+					if Magnitude <> 0 then
+					begin
+						DirectionX := Round(DirectionX * 10 / Magnitude);
+						DirectionY := Round(DirectionY * 10 / Magnitude);
+					end;
+
+					// Calculate the new destination coordinates closer to the center
+					NewX := States.UnitPositionX(RandUnit) + DirectionX;
+					NewY := States.UnitPositionY(RandUnit) + DirectionY;
 				end;
-
-				// Calculate the new destination coordinates closer to the center
-				NewX := States.UnitPositionX(RandUnit) + DirectionX;
-				NewY := States.UnitPositionY(RandUnit) + DirectionY;
-
 				// Order the group to walk towards the new destination
 				Actions.GroupOrderWalk(States.UnitsGroup(RandUnit), NewX, NewY, States.KamRandomI(8));
 			end;
@@ -1213,8 +1322,6 @@ begin
 		Inc(EnemyUnitsKilled);
 	end;
 end;
-
-
 
 procedure OnHouseDestroyed(aHouse: Integer; aDestroyer: Integer);
 var HousePosX, HousePosY, U : Integer;
