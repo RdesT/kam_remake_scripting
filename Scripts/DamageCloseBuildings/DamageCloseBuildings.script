@@ -79,6 +79,7 @@ record
 
   Id: integer;
   Location: TKMPoint;
+  Direction: TKMDirection;
 end;
 
 type DCB_GroupOrderTask =
@@ -523,7 +524,7 @@ begin
 
     case OrderType of
 
-      goWalkTo: A.GroupOrderWalk(GroupId, Location.X, Location.Y, 4);
+      goWalkTo: A.GroupOrderWalk(GroupId, Location.X, Location.Y, Direction);
       goAttackHouse: A.GroupOrderAttackHouse(GroupId, Id);
       goAttackUnit: A.GroupOrderAttackUnit(GroupId, Id);
     end;
@@ -583,7 +584,7 @@ begin
   DCB_GroupOrders[orderIndex].Location.Y := 0;
 end;
 
-procedure DCB_OnGroupOrderMove(aGroup: Integer; aX: Integer; aY: Integer);
+procedure DCB_OnGroupOrderMove(aGroup: Integer; aX: Integer; aY: Integer; aDir: TKMDirection);
 var
   orderIndex: integer;
 
@@ -606,6 +607,7 @@ begin
   DCB_GroupOrders[orderIndex].Id := 0;
   DCB_GroupOrders[orderIndex].Location.X := aX;
   DCB_GroupOrders[orderIndex].Location.Y := aY;
+  DCB_GroupOrders[orderIndex].Direction := aDir;
 end;
 
 
