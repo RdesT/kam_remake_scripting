@@ -524,7 +524,7 @@ begin
 
     case OrderType of
 
-      goWalkTo: A.GroupOrderWalk(GroupId, Location.X, Location.Y, Direction);
+      goWalkTo: A.GroupOrderWalkEx(GroupId, Location.X, Location.Y, Direction);
       goAttackHouse: A.GroupOrderAttackHouse(GroupId, Id);
       goAttackUnit: A.GroupOrderAttackUnit(GroupId, Id);
     end;
