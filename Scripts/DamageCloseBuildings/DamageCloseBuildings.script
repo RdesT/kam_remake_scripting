@@ -98,6 +98,17 @@ var
   DCB_GroupOrders: array of DCB_GroupOrder;
   DCB_GroupOrderTasks: array of DCB_GroupOrderTask;
 
+function DCB_SafeHouseAt(x,y: integer): integer;
+begin
+  if ((x > 0) and (y > 0) and (x < S.MapWidth) and (y < S.MapHeight)) then
+  begin
+    result := S.HouseAt(x,y);
+  end else
+  begin
+    result := -1;
+  end;
+end;
+
 function DCB_FindGroupOrderTaskByGroupIndex(groupId: integer) : integer;
 var
   i : integer;
@@ -286,7 +297,7 @@ var
 begin
 
   result := houseIds;
-  aHouse := S.HouseAt(x,y);
+  aHouse := DCB_SafeHouseAt(x,y);
   if (aHouse = -1) then
   begin
     exit;
@@ -333,7 +344,7 @@ var
 
 begin
 
-  houseId := S.HouseAt(x,y);
+  houseId := DCB_SafeHouseAt(x,y);
   if (houseId = -1) then
   begin
     exit;
